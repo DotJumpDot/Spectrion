@@ -1,0 +1,43 @@
+const path = require("path");
+const CopyWebpackPlugin = require("copy-webpack-plugin");
+
+module.exports = {
+  entry: {
+    background: "./src/core/background/background.ts",
+    popup: "./src/core/popup/popup.ts",
+    content: "./src/core/content/content.ts",
+    analysis: "./src/core/analysis/analysis.ts",
+  },
+  output: {
+    path: path.resolve(__dirname, "dist"),
+    filename: "[name].js",
+    clean: true,
+  },
+  module: {
+    rules: [
+      {
+        test: /\.tsx?$/,
+        use: "ts-loader",
+        exclude: /node_modules/,
+      },
+    ],
+  },
+  resolve: {
+    extensions: [".tsx", ".ts", ".js"],
+  },
+  plugins: [
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: "manifest.json", to: "manifest.json" },
+        { from: "src/core/popup/popup.html", to: "popup.html" },
+        { from: "src/core/popup/popup.css", to: "popup.css" },
+        { from: "src/core/analysis/analysis.html", to: "analysis.html" },
+        { from: "src/core/analysis/analysis.css", to: "analysis.css" },
+        { from: "icons", to: "icons", noErrorOnMissing: true },
+      ],
+    }),
+  ],
+  optimization: {
+    minimize: false,
+  },
+};

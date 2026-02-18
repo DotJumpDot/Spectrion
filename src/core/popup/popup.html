@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spectrion</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Spectrion</h1>
+      <span class="status" id="status">Ready</span>
+    </div>
+
+    <div class="stats">
+      <div class="stat-item">
+        <span class="stat-label">API Calls</span>
+        <span class="stat-value" id="apiCallsCount">0</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Session</span>
+        <span class="stat-value" id="sessionTime">--:--</span>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn primary" id="openAnalysisBtn">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+          <path d="M10 4a6 6 0 01-6 6m6-6a6 6 0 016 6m-6 6a6 6 0 01-6-6m6 6a6 6 0 016-6"/>
+        </svg>
+        Open Analysis Tab
+      </button>
+      <button class="btn secondary" id="clearBtn">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H3.862a2 2 0 01-1.995-1.858L1 7m5 4v6m4-6v6m4-6v6m1-10V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2M4 7h16"/>
+        </svg>
+        Clear Sessions
+      </button>
+    </div>
+
+    <div class="error-message" id="errorMessage"></div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

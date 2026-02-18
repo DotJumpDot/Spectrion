@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spectrion - API Analysis</title>
+  <link rel="stylesheet" href="analysis.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="header-left">
+        <h1>Spectrion</h1>
+        <span class="badge" id="callCount">0 calls</span>
+      </div>
+      <div class="header-actions">
+        <button class="btn secondary" id="refreshBtn">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M16 8A8 8 0 1 1 2 8"/>
+            <path d="M16 8l-4-4"/>
+            <path d="M16 8l-4 4"/>
+          </svg>
+          Refresh
+        </button>
+        <button class="btn secondary" id="exportBtn">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7,10 12,15 17,10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Export
+        </button>
+        <button class="btn danger" id="clearBtn">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 6h18"/>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          </svg>
+          Clear
+        </button>
+      </div>
+    </header>
+
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Search API calls by URL or method...">
+      <select id="methodFilter">
+        <option value="all">All Methods</option>
+        <option value="GET">GET</option>
+        <option value="POST">POST</option>
+        <option value="PUT">PUT</option>
+        <option value="DELETE">DELETE</option>
+        <option value="PATCH">PATCH</option>
+      </select>
+      <select id="statusFilter">
+        <option value="all">All Status</option>
+        <option value="success">Success (2xx)</option>
+        <option value="redirect">Redirect (3xx)</option>
+        <option value="error">Error (4xx, 5xx)</option>
+      </select>
+    </div>
+
+    <div class="main-content">
+      <div class="api-list">
+        <div class="api-list-header">
+          <h2>API Calls</h2>
+        </div>
+        <div id="apiCallsContainer" class="api-calls">
+          <div class="empty-state">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="#999" stroke-width="1.5">
+              <circle cx="24" cy="24" r="20"/>
+              <path d="M24 16v16M16 24h16"/>
+            </svg>
+            <p>No API calls captured yet</p>
+            <small>Start browsing to see API calls here</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="api-details">
+        <div class="api-details-header">
+          <h2>Request Details</h2>
+          <button class="btn-icon" id="closeDetailsBtn">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M6 6l12 12M18 6l-12 12"/>
+            </svg>
+          </button>
+        </div>
+        <div id="apiDetailsContent" class="api-details-content">
+          <div class="empty-state">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="#999" stroke-width="1.5">
+              <rect x="12" y="8" width="24" height="32" rx="2"/>
+              <path d="M20 20h8M20 26h8"/>
+            </svg>
+            <p>Select an API call to view details</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="analysis.js"></script>
+</body>
+</html>
