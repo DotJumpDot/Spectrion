@@ -2,8 +2,10 @@ describe("Full Information Mode", () => {
   let mockChrome: any;
   let mockStorage: { [key: string]: any } = {};
   let mockDocument: any;
+  let originalDocument: any;
 
   beforeEach(() => {
+    originalDocument = global.document;
     mockDocument = {
       getElementById: jest.fn((id: string) => {
         if (id === "fullInfoMode") {
@@ -65,13 +67,14 @@ describe("Full Information Mode", () => {
         },
       },
     };
-    
+
     (global as any).chrome = mockChrome;
     (global as any).document = mockDocument;
     mockStorage = {};
   });
 
   afterEach(() => {
+    (global as any).document = originalDocument;
     jest.clearAllMocks();
   });
 
@@ -91,9 +94,10 @@ describe("Full Information Mode", () => {
       const checkbox = mockDocument.getElementById("fullInfoMode");
       checkbox!.checked = true;
 
-      mockChrome.storage.local.set(
-        { spectrion_max_history_size: 10, spectrion_full_info_mode: true }
-      );
+      mockChrome.storage.local.set({
+        spectrion_max_history_size: 10,
+        spectrion_full_info_mode: true,
+      });
 
       expect(mockChrome.storage.local.set).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -109,13 +113,16 @@ describe("Full Information Mode", () => {
         expect(result.spectrion_full_info_mode).toBe(true);
       });
 
-      expect(mockChrome.storage.local.get).toHaveBeenCalledWith(["spectrion_full_info_mode"], expect.any(Function));
+      expect(mockChrome.storage.local.get).toHaveBeenCalledWith(
+        ["spectrion_full_info_mode"],
+        expect.any(Function)
+      );
     });
   });
 
   describe("Background Script Communication", () => {
     it("should send SET_FULL_INFO_MODE message to background script", async () => {
-      const checkbox = document.getElementById("fullInfoMode") as HTMLInputElement;
+      const checkbox = mockDocument.getElementById("fullInfoMode") as HTMLInputElement;
       checkbox.checked = true;
 
       await chrome.runtime.sendMessage({
@@ -130,7 +137,7 @@ describe("Full Information Mode", () => {
     });
 
     it("should send message with enabled: false when toggle is off", async () => {
-      const checkbox = document.getElementById("fullInfoMode") as HTMLInputElement;
+      const checkbox = mockDocument.getElementById("fullInfoMode") as HTMLInputElement;
       checkbox.checked = false;
 
       await chrome.runtime.sendMessage({
@@ -147,14 +154,14 @@ describe("Full Information Mode", () => {
 
   describe("Mode States", () => {
     it("should default to reduced mode (fullInfoMode = false)", () => {
-      const checkbox = document.getElementById("fullInfoMode") as HTMLInputElement;
+      const checkbox = mockDocument.getElementById("fullInfoMode") as HTMLInputElement;
       expect(checkbox?.checked).toBe(false);
     });
 
     it("should enable full information mode when checkbox is checked", () => {
-      const checkbox = document.getElementById("fullInfoMode") as HTMLInputElement;
+      const checkbox = mockDocument.getElementById("fullInfoMode") as HTMLInputElement;
       checkbox.checked = true;
-      
+
       expect(checkbox?.checked).toBe(true);
     });
 

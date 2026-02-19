@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-02-19
+
+### Added
+
+- Enhanced Analysis page UI with full-width Request Details panel
+- Vertical scrolling support for long API response bodies
+- Standardized SVG icons for better visual consistency
+- Improved button styling with secondary outline style for action buttons
+- Native Bun test runner support with custom configuration
+
+### Fixed
+
+- Fixed zero API calls issue in Analytics page by including active sessions
+- Fixed tab-specific analytics loading logic
+- Resolved Edge browser compatibility issues by removing insecure CSP directives
+- Replaced CDN dependencies with local packages for better security
+- Fixed various test failures and environment mismatches
+
 ## [1.3.0] - 2026-02-19
 
 ### Added

@@ -6,6 +6,7 @@ export class StorageManager {
   private readonly SESSION_KEY = "spectrion_sessions";
   private readonly CURRENT_SESSION_KEY = "spectrion_current_session";
   private readonly FULL_INFO_MODE_KEY = "spectrion_full_info_mode";
+  private readonly ANALYTICS_CACHE_KEY = "spectrion_analytics_cache";
 
   async getFullInfoMode(): Promise<boolean> {
     try {
@@ -103,8 +104,37 @@ export class StorageManager {
       await this.setStorage(this.SESSION_KEY, []);
       await this.setStorage(this.CURRENT_SESSION_KEY, null);
       await this.setStorage("spectrion_url_history", []);
+      await this.setStorage(this.ANALYTICS_CACHE_KEY, null);
     } catch (error) {
       console.error("Failed to clear all sessions:", error);
+      throw error;
+    }
+  }
+
+  async getAnalyticsCache(): Promise<any> {
+    try {
+      const result = await this.getStorage(this.ANALYTICS_CACHE_KEY);
+      return result || null;
+    } catch (error) {
+      console.error("Failed to get analytics cache:", error);
+      return null;
+    }
+  }
+
+  async setAnalyticsCache(data: any): Promise<void> {
+    try {
+      await this.setStorage(this.ANALYTICS_CACHE_KEY, data);
+    } catch (error) {
+      console.error("Failed to set analytics cache:", error);
+      throw error;
+    }
+  }
+
+  async clearAnalyticsCache(): Promise<void> {
+    try {
+      await this.setStorage(this.ANALYTICS_CACHE_KEY, null);
+    } catch (error) {
+      console.error("Failed to clear analytics cache:", error);
       throw error;
     }
   }

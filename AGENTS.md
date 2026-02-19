@@ -1,6 +1,6 @@
 # Spectrion Development Team
 
-**Version: 1.3.0** - 2026-02-19
+**Version: 1.4.0** - 2026-02-19
 
 This document outlines roles and responsibilities of agents involved in Spectrion project.
 

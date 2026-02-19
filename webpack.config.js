@@ -7,6 +7,7 @@ module.exports = {
     popup: "./src/core/popup/popup.ts",
     content: "./src/core/content/content.ts",
     analysis: "./src/core/analysis/analysis.ts",
+    analytics: "./src/core/analytics/analytics.ts",
   },
   output: {
     path: path.resolve(__dirname, "dist"),
@@ -33,6 +34,8 @@ module.exports = {
         { from: "src/core/popup/popup.css", to: "popup.css" },
         { from: "src/core/analysis/analysis.html", to: "analysis.html" },
         { from: "src/core/analysis/analysis.css", to: "analysis.css" },
+        { from: "src/core/analytics/analytics.html", to: "analytics.html" },
+        { from: "src/core/analytics/analytics.css", to: "analytics.css" },
         { from: "icons", to: "icons", noErrorOnMissing: true },
         { from: "src/core/content/injected.js", to: "injected.js" },
       ],

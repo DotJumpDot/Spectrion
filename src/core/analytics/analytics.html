@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spectrion - Analytics Dashboard</title>
+    <link rel="stylesheet" href="analytics.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header class="header">
+        <div class="header-left">
+          <h1>Spectrion Analytics</h1>
+        </div>
+        <div class="header-right">
+          <select id="timeRangeFilter" class="time-filter">
+            <option value="all">All Time</option>
+            <option value="hour">Last Hour</option>
+            <option value="day">Last Day</option>
+            <option value="week">Last Week</option>
+          </select>
+          <button class="btn danger" id="clearAnalyticsBtn">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 18 18"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M3 6h18" />
+              <path
+                d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+              />
+            </svg>
+            Clear Analytics
+          </button>
+        </div>
+      </header>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"
+              />
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+              <line x1="12" y1="22.08" x2="12" y2="12" />
+            </svg>
+          </div>
+          <div class="stat-content">
+            <div class="stat-label">Total API Calls</div>
+            <div class="stat-value" id="totalCalls">0</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+          </div>
+          <div class="stat-content">
+            <div class="stat-label">Avg Response Time</div>
+            <div class="stat-value" id="avgResponseTime">0ms</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+            </svg>
+          </div>
+          <div class="stat-content">
+            <div class="stat-label">Error Rate</div>
+            <div class="stat-value" id="errorRate">0%</div>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="stat-icon">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+          </div>
+          <div class="stat-content">
+            <div class="stat-label">Total Bandwidth</div>
+            <div class="stat-value" id="totalBandwidth">0 KB</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-card">
+          <div class="chart-header">
+            <h2>Response Time Trends</h2>
+            <div class="chart-legend">
+              <div class="legend-item">
+                <span class="legend-color success"></span>
+                <span>Success</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-color error"></span>
+                <span>Error</span>
+              </div>
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="responseTimeChart"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-header">
+            <h2>Status Code Distribution</h2>
+          </div>
+          <div class="chart-container">
+            <canvas id="statusChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="endpoints-section">
+        <div class="section-header">
+          <h2>Most Used Endpoints</h2>
+          <input
+            type="text"
+            id="endpointSearch"
+            placeholder="Search endpoints..."
+            class="search-input"
+          />
+        </div>
+        <div class="endpoints-table-wrapper">
+          <table class="endpoints-table">
+            <thead>
+              <tr>
+                <th>Endpoint</th>
+                <th>Calls</th>
+                <th>Avg Time</th>
+                <th>Error Rate</th>
+                <th>Bandwidth</th>
+              </tr>
+            </thead>
+            <tbody id="endpointsTableBody">
+              <tr>
+                <td colspan="5" class="empty-state">No data available</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal" id="confirmModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Confirm Action</h2>
+        </div>
+        <div class="modal-body">
+          <p id="confirmMessage">Are you sure you want to proceed?</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" id="confirmCancel">Cancel</button>
+          <button class="btn danger" id="confirmOk">Confirm</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="analytics.js"></script>
+  </body>
+</html>

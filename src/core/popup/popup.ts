@@ -6,6 +6,7 @@ interface TabInfo {
 
 document.addEventListener("DOMContentLoaded", () => {
   const openAnalysisBtn = document.getElementById("openAnalysisBtn") as HTMLButtonElement;
+  const openAnalyticsBtn = document.getElementById("openAnalyticsBtn") as HTMLButtonElement;
   const clearBtn = document.getElementById("clearBtn") as HTMLButtonElement;
   const statusElement = document.getElementById("status") as HTMLElement;
   const apiCallsCountElement = document.getElementById("apiCallsCount") as HTMLElement;
@@ -188,6 +189,24 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (error) {
       console.error("Error opening analysis tab:", error);
       showError("Failed to open analysis tab");
+    }
+  });
+
+  openAnalyticsBtn.addEventListener("click", async () => {
+    try {
+      updateStatus();
+      
+      let analyticsUrl = chrome.runtime.getURL("analytics.html");
+      
+      if (selectedTabId) {
+        analyticsUrl += `?tabId=${selectedTabId}`;
+      }
+      
+      await chrome.tabs.create({ url: analyticsUrl });
+      window.close();
+    } catch (error) {
+      console.error("Error opening analytics tab:", error);
+      showError("Failed to open analytics tab");
     }
   });
 

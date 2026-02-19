@@ -26,6 +26,16 @@ interface UrlHistory {
   timestamp: number;
 }
 
+interface RequestPreset {
+  id: string;
+  name: string;
+  method: string;
+  url: string;
+  headers: string;
+  body: string;
+  createdAt: number;
+}
+
 let apiCalls: ApiCall[] = [];
 let selectedCall: ApiCall | null = null;
 let currentTabId: number | null = null;
@@ -36,6 +46,7 @@ let isDarkMode = false;
 let maxHistorySize = 10;
 let showUrlInsteadOfTitle = true;
 let isDropdownOpen = false;
+let requestPresets: RequestPreset[] = [];
 
 document.addEventListener("DOMContentLoaded", () => {
   const refreshBtn = document.getElementById("refreshBtn");
@@ -64,6 +75,32 @@ document.addEventListener("DOMContentLoaded", () => {
   const maxHistorySizeInput = document.getElementById("maxHistorySize") as HTMLInputElement;
   const fullInfoModeInput = document.getElementById("fullInfoMode") as HTMLInputElement;
   const fullInfoModeToggle = document.querySelector(".toggle-switch") as HTMLElement;
+  const copyModal = document.getElementById("copyModal");
+  const closeCopyBtn = document.getElementById("closeCopyBtn");
+  const copyCurlBtn = document.getElementById("copyCurl");
+  const copyFetchBtn = document.getElementById("copyFetch");
+  const copyAxiosBtn = document.getElementById("copyAxios");
+  let currentCopyCall: ApiCall | null = null;
+  const modifyModal = document.getElementById("modifyModal");
+  const closeModifyBtn = document.getElementById("closeModifyBtn");
+  const cancelModifyBtn = document.getElementById("cancelModifyBtn");
+  const sendModifiedBtn = document.getElementById("sendModifiedBtn");
+  const modifyMethod = document.getElementById("modifyMethod") as HTMLSelectElement;
+  const modifyUrl = document.getElementById("modifyUrl") as HTMLInputElement;
+  const modifyHeaders = document.getElementById("modifyHeaders") as HTMLTextAreaElement;
+  const modifyBody = document.getElementById("modifyBody") as HTMLTextAreaElement;
+  let currentModifyCall: ApiCall | null = null;
+  const requestBuilderModal = document.getElementById("requestBuilderModal");
+  const requestBuilderBtn = document.getElementById("requestBuilderBtn");
+  const closeRequestBuilderBtn = document.getElementById("closeRequestBuilderBtn");
+  const cancelRequestBtn = document.getElementById("cancelRequestBtn");
+  const sendRequestBtn = document.getElementById("sendRequestBtn");
+  const requestMethod = document.getElementById("requestMethod") as HTMLSelectElement;
+  const requestUrl = document.getElementById("requestUrl") as HTMLInputElement;
+  const requestHeaders = document.getElementById("requestHeaders") as HTMLTextAreaElement;
+  const requestBody = document.getElementById("requestBody") as HTMLTextAreaElement;
+  const savePresetBtn = document.getElementById("savePresetBtn");
+  const presetsList = document.getElementById("presetsList");
 
   fullInfoModeToggle?.addEventListener("click", (e) => {
     e.preventDefault();
@@ -151,6 +188,29 @@ document.addEventListener("DOMContentLoaded", () => {
           ${formatTime(Date.now() - call.timestamp)} ago
           ${call.duration ? `• ${call.duration}ms` : ""}
         </div>
+        <div class="api-actions">
+          <button class="btn secondary small replay-btn" data-id="${call.id}" title="Replay this API call">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+            </svg>
+            Replay
+          </button>
+          <button class="btn secondary small modify-btn" data-id="${call.id}" title="Modify and retry this API call">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+            </svg>
+            Modify
+          </button>
+          <button class="btn secondary small copy-btn" data-id="${call.id}" title="Copy request code">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            Copy
+          </button>
+        </div>
       </div>
     `
       )
@@ -165,6 +225,311 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
     });
+
+    document.querySelectorAll(".replay-btn").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const callId = btn.getAttribute("data-id");
+        if (callId) {
+          replayApiCall(callId);
+        }
+      });
+    });
+
+    document.querySelectorAll(".copy-btn").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const callId = btn.getAttribute("data-id");
+        const call = apiCalls.find((c) => c.id === callId);
+        if (call) {
+          currentCopyCall = call;
+          openCopyModal();
+        }
+      });
+    });
+
+    document.querySelectorAll(".modify-btn").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const callId = btn.getAttribute("data-id");
+        const call = apiCalls.find((c) => c.id === callId);
+        if (call) {
+          currentModifyCall = call;
+          openModifyModal(call);
+        }
+      });
+    });
+  }
+
+  function openCopyModal(): void {
+    copyModal!.classList.add("visible");
+  }
+
+  function closeCopyModal(): void {
+    copyModal!.classList.remove("visible");
+    currentCopyCall = null;
+  }
+
+  function openModifyModal(call: ApiCall): void {
+    modifyMethod!.value = call.method;
+    modifyUrl!.value = call.url;
+    modifyHeaders!.value = call.requestHeaders ? JSON.stringify(call.requestHeaders, null, 2) : "";
+    modifyBody!.value = call.requestBody || "";
+    modifyModal!.classList.add("visible");
+  }
+
+  function closeModifyModal(): void {
+    modifyModal!.classList.remove("visible");
+    currentModifyCall = null;
+  }
+
+  async function sendModifiedRequest(): Promise<void> {
+    const method = modifyMethod!.value;
+    const url = modifyUrl!.value.trim();
+    const headersStr = modifyHeaders!.value.trim();
+    const bodyStr = modifyBody!.value.trim();
+
+    if (!url) {
+      alert("Please enter a URL");
+      return;
+    }
+
+    let headers = {};
+    if (headersStr) {
+      try {
+        headers = JSON.parse(headersStr);
+      } catch (e) {
+        alert("Invalid headers JSON");
+        return;
+      }
+    }
+
+    let body = undefined;
+    if (bodyStr && ["POST", "PUT", "PATCH"].includes(method)) {
+      try {
+        body = bodyStr;
+      } catch (e) {
+        alert("Invalid body JSON");
+        return;
+      }
+    }
+
+    try {
+      const response = await fetch(url, {
+        method,
+        headers,
+        body,
+      });
+
+      const responseText = await response.text();
+      const responseHeadersObj: Record<string, string> = {};
+      response.headers.forEach((value, key) => {
+        responseHeadersObj[key] = value;
+      });
+
+      const modifiedCall = {
+        id: `modified-${Date.now()}`,
+        url,
+        method,
+        requestHeaders: headers,
+        requestBody: body,
+        responseHeaders: responseHeadersObj,
+        responseBody: responseText,
+        statusCode: response.status,
+        timestamp: Date.now(),
+        duration: undefined,
+      };
+
+      apiCalls.unshift(modifiedCall);
+      selectApiCall(modifiedCall);
+      renderApiCalls();
+      closeModifyModal();
+      showToast("Modified request sent successfully!");
+    } catch (error) {
+      console.error("Error sending modified request:", error);
+      alert("Failed to send modified request: " + String(error));
+    }
+  }
+
+  function generateCurlCode(call: ApiCall): string {
+    let curl = `curl -X ${call.method} "${call.url}"`;
+
+    if (call.requestHeaders) {
+      Object.entries(call.requestHeaders).forEach(([key, value]) => {
+        curl += ` \\\n  -H "${key}: ${value}"`;
+      });
+    }
+
+    if (call.requestBody) {
+      curl += ` \\\n  -d '${call.requestBody}'`;
+    }
+
+    return curl;
+  }
+
+  function generateFetchCode(call: ApiCall): string {
+    const headers = call.requestHeaders ? JSON.stringify(call.requestHeaders, null, 2) : "{}";
+    const body = call.requestBody ? `\n  body: ${call.requestBody},` : "";
+
+    return `fetch("${call.url}", {
+  method: "${call.method}",
+  headers: ${headers},${body}
+})
+  .then(response => response.json())
+  .then(data => console.log(data))
+  .catch(error => console.error('Error:', error));`;
+  }
+
+  function generateAxiosCode(call: ApiCall): string {
+    const headers = call.requestHeaders ? JSON.stringify(call.requestHeaders, null, 2) : "{}";
+    const body = call.requestBody ? `\n  data: ${call.requestBody},` : "";
+
+    return `axios({
+  method: "${call.method}",
+  url: "${call.url}",
+  headers: ${headers},${body}
+})
+  .then(response => console.log(response.data))
+  .catch(error => console.error('Error:', error));`;
+  }
+
+  function showToast(message: string): void {
+    const toast = document.createElement("div");
+    toast.className = "toast";
+    toast.textContent = message;
+    toast.style.cssText = `
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--primary-color);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      z-index: 10000;
+      animation: slideIn 0.3s ease;
+    `;
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.animation = "slideOut 0.3s ease";
+      setTimeout(() => toast.remove(), 300);
+    }, 2000);
+  }
+
+  async function replayApiCall(callId: string): Promise<void> {
+    const call = apiCalls.find((c) => c.id === callId);
+    if (!call) return;
+
+    try {
+      const response = await fetch(call.url, {
+        method: call.method,
+        headers: call.requestHeaders || {},
+        body: call.requestBody || undefined,
+      });
+
+      const responseText = await response.text();
+      const replayResponseHeadersObj: Record<string, string> = {};
+      response.headers.forEach((value, key) => {
+        replayResponseHeadersObj[key] = value;
+      });
+
+      const replayResponse = {
+        id: `replay-${call.id}`,
+        url: call.url,
+        method: call.method,
+        requestHeaders: call.requestHeaders,
+        requestBody: call.requestBody,
+        responseHeaders: replayResponseHeadersObj,
+        responseBody: responseText,
+        statusCode: response.status,
+        timestamp: Date.now(),
+        duration: undefined,
+      };
+
+      apiCalls.push(replayResponse);
+      selectApiCall(replayResponse);
+      renderApiCalls();
+    } catch (error) {
+      console.error("Error replaying API call:", error);
+      alert("Failed to replay API call: " + String(error));
+    }
+  }
+
+  function openRequestBuilderModal(): void {
+    requestBuilderModal!.classList.add("visible");
+  }
+
+  function closeRequestBuilderModal(): void {
+    requestBuilderModal!.classList.remove("visible");
+  }
+
+  async function sendRequest(): Promise<void> {
+    const method = requestMethod!.value;
+    const url = requestUrl!.value.trim();
+    const headersStr = requestHeaders!.value.trim();
+    const bodyStr = requestBody!.value.trim();
+
+    if (!url) {
+      alert("Please enter a URL");
+      return;
+    }
+
+    let headers = {};
+    if (headersStr) {
+      try {
+        headers = JSON.parse(headersStr);
+      } catch (e) {
+        alert("Invalid headers JSON");
+        return;
+      }
+    }
+
+    let body = undefined;
+    if (bodyStr && ["POST", "PUT", "PATCH"].includes(method)) {
+      try {
+        body = bodyStr;
+      } catch (e) {
+        alert("Invalid body JSON");
+        return;
+      }
+    }
+
+    try {
+      const response = await fetch(url, {
+        method,
+        headers,
+        body,
+      });
+
+      const responseText = await response.text();
+      const newCallHeadersObj: Record<string, string> = {};
+      response.headers.forEach((value, key) => {
+        newCallHeadersObj[key] = value;
+      });
+
+      const newCall = {
+        id: `manual-${Date.now()}`,
+        url,
+        method,
+        requestHeaders: headers,
+        requestBody: body,
+        responseHeaders: newCallHeadersObj,
+        responseBody: responseText,
+        statusCode: response.status,
+        timestamp: Date.now(),
+        duration: undefined,
+      };
+
+      apiCalls.unshift(newCall);
+      selectApiCall(newCall);
+      renderApiCalls();
+      closeRequestBuilderModal();
+      showToast("Request sent successfully!");
+    } catch (error) {
+      console.error("Error sending request:", error);
+      alert("Failed to send request: " + String(error));
+    }
   }
 
   function selectApiCall(call: ApiCall): void {
@@ -321,6 +686,111 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (error) {
       console.error("Error loading URL history:", error);
     }
+  }
+
+  async function loadPresets(): Promise<void> {
+    try {
+      const result = await chrome.storage.local.get("spectrion_request_presets");
+      requestPresets = (result.spectrion_request_presets as RequestPreset[]) || [];
+      renderPresets();
+    } catch (error) {
+      console.error("Error loading presets:", error);
+    }
+  }
+
+  async function savePreset(): Promise<void> {
+    const name = prompt("Enter a name for this preset:");
+    if (!name) return;
+
+    const preset: RequestPreset = {
+      id: `preset-${Date.now()}`,
+      name,
+      method: requestMethod!.value,
+      url: requestUrl!.value.trim(),
+      headers: requestHeaders!.value.trim(),
+      body: requestBody!.value.trim(),
+      createdAt: Date.now(),
+    };
+
+    if (!preset.url) {
+      alert("Please enter a URL before saving as preset");
+      return;
+    }
+
+    requestPresets.push(preset);
+    await chrome.storage.local.set({ spectrion_request_presets: requestPresets });
+    renderPresets();
+    showToast("Preset saved successfully!");
+  }
+
+  function loadPreset(preset: RequestPreset): void {
+    requestMethod!.value = preset.method;
+    requestUrl!.value = preset.url;
+    requestHeaders!.value = preset.headers;
+    requestBody!.value = preset.body;
+  }
+
+  async function deletePreset(id: string): Promise<void> {
+    if (!confirm("Are you sure you want to delete this preset?")) return;
+
+    requestPresets = requestPresets.filter((p) => p.id !== id);
+    await chrome.storage.local.set({ spectrion_request_presets: requestPresets });
+    renderPresets();
+    showToast("Preset deleted successfully!");
+  }
+
+  function renderPresets(): void {
+    if (!presetsList) return;
+
+    if (requestPresets.length === 0) {
+      presetsList.innerHTML = '<div class="empty-presets">No presets saved yet</div>';
+      return;
+    }
+
+    presetsList.innerHTML = requestPresets
+      .map(
+        (preset) => `
+        <div class="preset-item">
+          <div class="preset-info">
+            <div class="preset-name">${preset.name}</div>
+            <div class="preset-details">
+              <span class="preset-method ${preset.method}">${preset.method}</span>
+              <span class="preset-url">${preset.url}</span>
+            </div>
+          </div>
+          <div class="preset-actions">
+            <button class="btn-icon small preset-load" data-id="${preset.id}" title="Load preset">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12l5 5l5-5" />
+                <path d="M12 1v16" />
+              </svg>
+            </button>
+            <button class="btn-icon small preset-delete" data-id="${preset.id}" title="Delete preset">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 6h18" />
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      `
+      )
+      .join("");
+
+    document.querySelectorAll(".preset-load").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-id");
+        const preset = requestPresets.find((p) => p.id === id);
+        if (preset) loadPreset(preset);
+      });
+    });
+
+    document.querySelectorAll(".preset-delete").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.getAttribute("data-id");
+        if (id) deletePreset(id);
+      });
+    });
   }
 
   function saveUrlHistory(): void {
@@ -579,6 +1049,73 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  copyModal?.addEventListener("click", (e) => {
+    if (e.target === copyModal) {
+      closeCopyModal();
+    }
+  });
+
+  closeCopyBtn?.addEventListener("click", closeCopyModal);
+
+  copyCurlBtn?.addEventListener("click", () => {
+    if (currentCopyCall) {
+      const curlCode = generateCurlCode(currentCopyCall);
+      navigator.clipboard.writeText(curlCode).then(() => {
+        showToast("Copied as curl!");
+        closeCopyModal();
+      });
+    }
+  });
+
+  copyFetchBtn?.addEventListener("click", () => {
+    if (currentCopyCall) {
+      const fetchCode = generateFetchCode(currentCopyCall);
+      navigator.clipboard.writeText(fetchCode).then(() => {
+        showToast("Copied as fetch!");
+        closeCopyModal();
+      });
+    }
+  });
+
+  copyAxiosBtn?.addEventListener("click", () => {
+    if (currentCopyCall) {
+      const axiosCode = generateAxiosCode(currentCopyCall);
+      navigator.clipboard.writeText(axiosCode).then(() => {
+        showToast("Copied as axios!");
+        closeCopyModal();
+      });
+    }
+  });
+
+  modifyModal?.addEventListener("click", (e) => {
+    if (e.target === modifyModal) {
+      closeModifyModal();
+    }
+  });
+
+  closeModifyBtn?.addEventListener("click", closeModifyModal);
+  cancelModifyBtn?.addEventListener("click", closeModifyModal);
+  sendModifiedBtn?.addEventListener("click", () => {
+    sendModifiedRequest();
+  });
+
+  requestBuilderBtn?.addEventListener("click", openRequestBuilderModal);
+  closeRequestBuilderBtn?.addEventListener("click", closeRequestBuilderModal);
+  cancelRequestBtn?.addEventListener("click", closeRequestBuilderModal);
+  savePresetBtn?.addEventListener("click", () => {
+    savePreset();
+  });
+
+  sendRequestBtn?.addEventListener("click", () => {
+    sendRequest();
+  });
+
+  requestBuilderModal?.addEventListener("click", (e) => {
+    if (e.target === requestBuilderModal) {
+      closeRequestBuilderModal();
+    }
+  });
+
   async function getCurrentTabInfo(): Promise<any> {
     try {
       const urlParams = new URLSearchParams(window.location.search);
@@ -666,12 +1203,15 @@ document.addEventListener("DOMContentLoaded", () => {
       closeUrlDropdown();
     }
   });
+
   loadUrlHistory();
+  loadPresets();
   loadAllTabSessions();
   getCurrentTabInfo().then((tabInfo) => {
     if (tabInfo) {
       loadApiCalls(tabInfo.tabId);
     }
   });
+
   setInterval(loadApiCalls, 3000);
 });
