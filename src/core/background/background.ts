@@ -77,12 +77,27 @@ chrome.webRequest.onBeforeRequest.addListener(
 
           if (session) {
             console.log("Adding API call to session:", session.id);
+            let requestBody: string | undefined;
+            if (
+              details.requestBody &&
+              details.requestBody.raw &&
+              details.requestBody.raw[0]?.bytes
+            ) {
+              try {
+                const textDecoder = new TextDecoder();
+                const rawBytes = new Uint8Array(details.requestBody.raw[0].bytes);
+                requestBody = textDecoder.decode(rawBytes);
+              } catch (e) {
+                requestBody = undefined;
+              }
+            }
+
             sessionManager.addApiCall(tabId, {
               id: `req-${details.requestId}`,
               url: details.url,
               method: details.method || "GET",
               requestHeaders: {},
-              requestBody: details.requestBody ? details.requestBody.raw?.toString() : undefined,
+              requestBody: requestBody,
               responseHeaders: {},
               statusCode: 0,
               timestamp: Date.now(),
@@ -100,6 +115,47 @@ chrome.webRequest.onBeforeRequest.addListener(
   },
   { urls: ["<all_urls>"] },
   ["requestBody"]
+);
+
+chrome.webRequest.onBeforeSendHeaders.addListener(
+  (details) => {
+    (async () => {
+      try {
+        if (details.type === "xmlhttprequest" && details.tabId !== -1) {
+          const tabId = details.tabId;
+          let session = sessionManager.getSession(tabId);
+          if (!session) {
+            const storedSession = await storageManager.getActiveSession(tabId);
+            if (storedSession) {
+              session = storedSession;
+              sessionManager.restoreSession(tabId, session);
+            }
+          }
+
+          if (session) {
+            const apiCall = session.apiCalls.find((call) => call.id === `req-${details.requestId}`);
+            if (apiCall) {
+              const headers: Record<string, string> = {};
+              if (details.requestHeaders) {
+                details.requestHeaders.forEach((header) => {
+                  if (header.name && header.value) {
+                    headers[header.name] = header.value;
+                  }
+                });
+              }
+              apiCall.requestHeaders = headers;
+              await storageManager.saveActiveSession(tabId, session);
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error in onBeforeSendHeaders:", error);
+      }
+    })();
+    return undefined;
+  },
+  { urls: ["<all_urls>"] },
+  ["requestHeaders"]
 );
 
 chrome.webRequest.onCompleted.addListener(

@@ -523,9 +523,13 @@ body.dark-mode .api-method.PATCH { background: #6a1b9a; color: #f3e5f5; }
   font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
   font-size: 12px;
   overflow-x: auto;
+  color: var(--text-primary);
+}
+
+.code-block pre {
+  margin: 0;
   white-space: pre-wrap;
   word-break: break-all;
-  color: var(--text-primary);
 }
 
 @media (max-width: 768px) {

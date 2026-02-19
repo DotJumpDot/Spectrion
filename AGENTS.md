@@ -44,10 +44,13 @@ This document outlines the roles and responsibilities of agents involved in Spec
 
 ### Testing Agent
 
-- Writes unit tests for core functionality
+- Writes comprehensive unit tests for core functionality
 - Implements integration tests with Jest and jsdom environment
 - Tests API monitoring, session management, and storage operations
 - Ensures extension compatibility across browsers
+- Develops performance and scalability tests for high-frequency operations
+- Creates real-world API scenario tests (REST, GraphQL, authentication, pagination)
+- Validates edge cases and data integrity
 - Located in `test/` directory
 
 ## Agent Collaboration

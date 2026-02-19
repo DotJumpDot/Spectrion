@@ -1,11 +1,39 @@
 # Changelog
 
-All notable changes to Spectrion will be documented in this file.
+All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.1.0] - 2026-02-19
+## [1.2.0] - 2026-02-19
+
+### Added
+
+- Comprehensive test suite with 88 test cases covering all core functionality
+- Test coverage for API monitoring, session management, and integration scenarios
+- Performance and scalability tests for high-frequency operations
+- Real-world API scenario tests (REST, GraphQL, authentication, pagination)
+- Edge case handling tests (large datasets, rapid operations, special characters)
+- Data integrity and immutability tests
+
+### Fixed
+
+- Fixed request headers capture to properly convert Headers objects to plain JavaScript objects
+- Fixed response headers capture for both fetch and XHR requests
+- Fixed request body display to properly format JSON objects instead of showing `[object Object]`
+- Fixed response body capture to include complete response data with proper formatting
+- Added `onBeforeSendHeaders` listener to capture request headers from WebRequest API
+- Improved request body decoding using TextDecoder for proper UTF-8 handling
+- Enhanced display formatting in analysis page with proper JSON indentation
+
+### Changed
+
+- Improved header parsing logic in injected script to handle various header formats
+- Enhanced error handling for malformed headers and response data
+- Updated CSS for better code block display with `<pre>` tags
+- Refined TypeScript types to handle optional properties more robustly
+
+## [1.1.0] - 2026-02-17
 
 ### Added
 

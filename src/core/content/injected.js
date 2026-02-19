@@ -5,6 +5,46 @@
 
   window.spectrionApiCalls = [];
 
+  function headersToPlainObject(headers) {
+    const result = {};
+    if (headers instanceof Headers) {
+      headers.forEach((value, key) => {
+        result[key] = value;
+      });
+    } else if (typeof headers === 'object' && headers !== null) {
+      Object.assign(result, headers);
+    }
+    return result;
+  }
+
+  function stringifyBody(body) {
+    if (body === null || body === undefined) {
+      return undefined;
+    }
+    if (typeof body === 'string') {
+      return body;
+    }
+    try {
+      return JSON.stringify(body, null, 2);
+    } catch (e) {
+      return String(body);
+    }
+  }
+
+  async function cloneResponse(response) {
+    try {
+      const clone = response.clone();
+      const text = await clone.text();
+      try {
+        return JSON.stringify(JSON.parse(text), null, 2);
+      } catch (e) {
+        return text;
+      }
+    } catch (e) {
+      return undefined;
+    }
+  }
+
   window.fetch = async function(...args) {
     const startTime = Date.now();
     const [url, options = {}] = args;
@@ -13,13 +53,16 @@
       const response = await originalFetch.apply(this, args);
       const duration = Date.now() - startTime;
 
+      const responseBody = await cloneResponse(response);
+
       const apiCall = {
         id: 'fetch-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
         url: url.toString(),
         method: options.method || 'GET',
-        requestHeaders: options.headers || {},
-        requestBody: options.body,
-        responseHeaders: {},
+        requestHeaders: headersToPlainObject(options.headers),
+        requestBody: stringifyBody(options.body),
+        responseHeaders: headersToPlainObject(response.headers),
+        responseBody: responseBody,
         statusCode: response.status,
         timestamp: startTime,
         duration,
@@ -33,8 +76,8 @@
         id: 'fetch-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
         url: url.toString(),
         method: options.method || 'GET',
-        requestHeaders: options.headers || {},
-        requestBody: options.body,
+        requestHeaders: headersToPlainObject(options.headers),
+        requestBody: stringifyBody(options.body),
         responseHeaders: {},
         statusCode: 0,
         timestamp: startTime,
@@ -58,13 +101,37 @@
 
     const addLoadListener = function() {
       xhr.addEventListener('load', function() {
+        const responseHeadersStr = xhr.getAllResponseHeaders();
+        const responseHeaders = {};
+        
+        if (responseHeadersStr) {
+          const lines = responseHeadersStr.split('\r\n');
+          lines.forEach(function(line) {
+            const parts = line.split(': ');
+            if (parts.length === 2) {
+              responseHeaders[parts[0]] = parts[1];
+            }
+          });
+        }
+
+        let responseBody = xhr.responseText;
+        try {
+          if (xhr.getResponseHeader('content-type') && xhr.getResponseHeader('content-type').includes('application/json')) {
+            const parsed = JSON.parse(xhr.responseText);
+            responseBody = JSON.stringify(parsed, null, 2);
+          }
+        } catch (e) {
+          responseBody = xhr.responseText;
+        }
+
         const apiCall = {
           id: 'xhr-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
           url: xhr._spectrionUrl,
           method: xhr._spectrionMethod,
           requestHeaders: {},
-          requestBody: body,
-          responseHeaders: {},
+          requestBody: stringifyBody(body),
+          responseHeaders: responseHeaders,
+          responseBody: responseBody,
           statusCode: xhr.status,
           timestamp: xhr._spectrionStartTime,
           duration: Date.now() - xhr._spectrionStartTime,

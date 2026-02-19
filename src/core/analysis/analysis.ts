@@ -181,6 +181,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const call = selectedCall;
 
+    const formatBody = (body: string | undefined): string => {
+      if (!body) return "";
+      try {
+        const parsed = JSON.parse(body);
+        return JSON.stringify(parsed, null, 2);
+      } catch (e) {
+        return body;
+      }
+    };
+
     apiDetailsContent!.innerHTML = `
       <div class="detail-section">
         <h3>General</h3>
@@ -229,7 +239,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ? `
         <div class="detail-section">
           <h3>Request Body</h3>
-          <div class="code-block">${call.requestBody}</div>
+          <div class="code-block"><pre>${formatBody(call.requestBody)}</pre></div>
         </div>
       `
           : ""
@@ -258,7 +268,7 @@ document.addEventListener("DOMContentLoaded", () => {
           ? `
         <div class="detail-section">
           <h3>Response Body</h3>
-          <div class="code-block">${call.responseBody}</div>
+          <div class="code-block"><pre>${formatBody(call.responseBody)}</pre></div>
         </div>
       `
           : ""
@@ -381,8 +391,8 @@ document.addEventListener("DOMContentLoaded", () => {
       if (actualIndex === currentHistoryIndex) {
         item.classList.add("active");
       }
-      item.textContent = showUrlInsteadOfTitle ? entry.url : (entry.title || entry.url);
-      item.title = showUrlInsteadOfTitle ? (entry.title || entry.url) : entry.url;
+      item.textContent = showUrlInsteadOfTitle ? entry.url : entry.title || entry.url;
+      item.title = showUrlInsteadOfTitle ? entry.title || entry.url : entry.url;
       item.addEventListener("click", () => {
         currentHistoryIndex = actualIndex;
         const urlInfo = urlHistory[currentHistoryIndex];
