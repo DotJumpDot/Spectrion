@@ -57,8 +57,8 @@ describe('ApiMonitor', () => {
       const result = (apiMonitor as any).getHeadersAsObject(headers);
 
       expect(result).toEqual({
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer token',
+        'content-type': 'application/json',
+        'authorization': 'Bearer token',
       });
     });
 

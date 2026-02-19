@@ -51,29 +51,29 @@ export class StorageManager {
     }
   }
 
-  async setCurrentSession(session: Session): Promise<void> {
+  async saveActiveSession(tabId: number, session: Session): Promise<void> {
     try {
-      await this.setStorage(this.CURRENT_SESSION_KEY, session);
+      await this.setStorage(`spectrion_active_session_${tabId}`, session);
     } catch (error) {
-      console.error("Failed to set current session:", error);
+      console.error(`Failed to set active session for tab ${tabId}:`, error);
       throw error;
     }
   }
 
-  async getCurrentSession(): Promise<Session | null> {
+  async getActiveSession(tabId: number): Promise<Session | null> {
     try {
-      return (await this.getStorage(this.CURRENT_SESSION_KEY)) || null;
+      return (await this.getStorage(`spectrion_active_session_${tabId}`)) || null;
     } catch (error) {
-      console.error("Failed to get current session:", error);
+      console.error(`Failed to get active session for tab ${tabId}:`, error);
       return null;
     }
   }
 
-  async clearCurrentSession(): Promise<void> {
+  async clearActiveSession(tabId: number): Promise<void> {
     try {
-      await this.setStorage(this.CURRENT_SESSION_KEY, null);
+      await this.setStorage(`spectrion_active_session_${tabId}`, null);
     } catch (error) {
-      console.error("Failed to clear current session:", error);
+      console.error(`Failed to clear active session for tab ${tabId}:`, error);
       throw error;
     }
   }

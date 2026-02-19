@@ -34,6 +34,7 @@ module.exports = {
         { from: "src/core/analysis/analysis.html", to: "analysis.html" },
         { from: "src/core/analysis/analysis.css", to: "analysis.css" },
         { from: "icons", to: "icons", noErrorOnMissing: true },
+        { from: "src/core/content/injected.js", to: "injected.js" },
       ],
     }),
   ],

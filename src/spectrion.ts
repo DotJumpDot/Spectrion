@@ -50,11 +50,11 @@ export class Spectrion {
   private async setupEventListeners(): Promise<void> {
     if (typeof chrome !== "undefined" && chrome.runtime) {
       apiMonitor.onApiCall(async (call: ApiCall) => {
-        const session = await storageManager.getCurrentSession();
-        if (session) {
-          sessionManager.addApiCall(call);
-          await storageManager.setCurrentSession(session);
-        }
+        // Send API call to background script
+        chrome.runtime.sendMessage({
+          type: "CONTENT_API_CALLS",
+          apiCalls: [call],
+        });
       });
     }
   }

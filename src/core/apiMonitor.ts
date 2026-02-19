@@ -61,46 +61,43 @@ export class ApiMonitor {
   }
 
   interceptXHR(): void {
+    const monitor = this;
     const originalOpen = XMLHttpRequest.prototype.open;
     const originalSend = XMLHttpRequest.prototype.send;
 
     XMLHttpRequest.prototype.open = function (method, url) {
-      (this as any)._method = method;
-      (this as any)._url = url;
-      (this as any)._startTime = Date.now();
+      const xhr = this as any;
+      xhr._method = method;
+      xhr._url = url;
+      xhr._startTime = Date.now();
       return originalOpen.apply(this, [method, url] as any);
     };
 
     XMLHttpRequest.prototype.send = function (body) {
       const xhr = this as any;
-      const apiMonitorInstance = (window as any).spectrionApiMonitor || new ApiMonitor();
-      (window as any).spectrionApiMonitor = apiMonitorInstance;
 
-      const addEventListener = this.addEventListener;
-      const originalAddEventListener = addEventListener.bind(this);
-
-      (this as any).addEventListener = function (type: string, listener: EventListener) {
-        if (type === "load") {
-          const wrappedListener = function (event: Event) {
-            const apiCall: ApiCall = {
-              id: apiMonitorInstance.generateId(),
-              url: xhr._url,
-              method: xhr._method,
-              requestHeaders: {},
-              requestBody: body as string,
-              responseHeaders: apiMonitorInstance.getHeadersAsObject(xhr.getAllResponseHeaders()),
-              statusCode: xhr.status,
-              timestamp: xhr._startTime,
-              duration: Date.now() - xhr._startTime,
-            };
-
-            apiMonitorInstance.notifyApiCall(apiCall);
-            return listener.call(xhr, event);
-          };
-          return originalAddEventListener.call(this, type, wrappedListener);
-        }
-        return originalAddEventListener.call(this, type, listener);
+      const emit = (statusCode: number, responseHeadersStr: string | Headers) => {
+        const apiCall: ApiCall = {
+          id: monitor.generateId(),
+          url: xhr._url,
+          method: xhr._method,
+          requestHeaders: {},
+          requestBody: body as string,
+          responseHeaders: monitor.getHeadersAsObject(responseHeadersStr),
+          statusCode,
+          timestamp: xhr._startTime,
+          duration: Date.now() - xhr._startTime,
+        };
+        monitor.notifyApiCall(apiCall);
       };
+
+      xhr.addEventListener("load", () => emit(xhr.status, xhr.getAllResponseHeaders()), {
+        once: true,
+      });
+
+      xhr.addEventListener("error", () => emit(0, ""), { once: true });
+
+      xhr.addEventListener("abort", () => emit(0, ""), { once: true });
 
       return originalSend.apply(this, [body] as any);
     };

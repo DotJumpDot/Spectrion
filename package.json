@@ -6,6 +6,7 @@
   "scripts": {
     "build": "webpack --mode production",
     "dev": "webpack --mode development --watch",
+    "lint": "tsc --noEmit",
     "test": "jest",
     "test:watch": "jest --watch"
   },

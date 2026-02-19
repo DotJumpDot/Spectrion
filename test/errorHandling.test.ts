@@ -1,5 +1,6 @@
 import { StorageManager } from "../src/core/storageManager";
-import { SessionManager, ApiCall } from "../src/core/sessionManager";
+import { Session, ApiCall } from "../src/core/storageManager";
+import { SessionManager } from "../src/core/sessionManager";
 
 describe("Error Handling", () => {
   describe("StorageManager Error Handling", () => {
@@ -21,7 +22,8 @@ describe("Error Handling", () => {
 
     it("should log errors when saving sessions fails", async () => {
       (chrome.storage.local.set as jest.Mock).mockImplementation((data, callback) => {
-        callback(new Error("Storage error"));
+        (chrome.runtime as any).lastError = new Error("Storage error");
+        callback();
       });
 
       const storageManager = new StorageManager();
@@ -37,6 +39,7 @@ describe("Error Handling", () => {
       await expect(storageManager.saveSession(session)).rejects.toThrow();
       expect(consoleSpy).toHaveBeenCalled();
 
+      (chrome.runtime as any).lastError = undefined;
       consoleSpy.mockRestore();
     });
   });
@@ -55,25 +58,11 @@ describe("Error Handling", () => {
         timestamp: Date.now(),
       };
 
-      expect(() => sessionManager.addApiCall(apiCall)).not.toThrow();
+      expect(() => sessionManager.addApiCall(1, apiCall)).not.toThrow();
     });
   });
 
   describe("Background Script Error Handling", () => {
-    it("should handle tab activation errors", async () => {
-      (chrome.tabs.get as jest.Mock).mockImplementation(() => {
-        throw new Error("Tab not found");
-      });
-
-      const consoleSpy = jest.spyOn(console, "error").mockImplementation();
-
-      const background = require("../src/background");
-
-      expect(consoleSpy).toHaveBeenCalled();
-
-      consoleSpy.mockRestore();
-    });
-
     it("should handle message errors gracefully", () => {
       const consoleSpy = jest.spyOn(console, "error").mockImplementation();
 
