@@ -2,9 +2,9 @@ interface ApiCall {
   id: string;
   url: string;
   method: string;
-  requestHeaders: Record<string, string>;
+  requestHeaders?: Record<string, string>;
   requestBody?: string;
-  responseHeaders: Record<string, string>;
+  responseHeaders?: Record<string, string>;
   responseBody?: string;
   statusCode: number;
   timestamp: number;
@@ -62,6 +62,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const closeSettingsBtn = document.getElementById("closeSettingsBtn");
   const saveSettingsBtn = document.getElementById("saveSettingsBtn");
   const maxHistorySizeInput = document.getElementById("maxHistorySize") as HTMLInputElement;
+  const fullInfoModeInput = document.getElementById("fullInfoMode") as HTMLInputElement;
+  const fullInfoModeToggle = document.querySelector(".toggle-switch") as HTMLElement;
+
+  fullInfoModeToggle?.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    fullInfoModeInput!.checked = !fullInfoModeInput!.checked;
+  });
 
   function formatTime(ms: number): string {
     const seconds = Math.floor(ms / 1000);
@@ -219,7 +227,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <div class="detail-section">
         <h3>Request Headers</h3>
         ${
-          Object.keys(call.requestHeaders).length > 0
+          call.requestHeaders && Object.keys(call.requestHeaders).length > 0
             ? Object.entries(call.requestHeaders)
                 .map(
                   ([key, value]) => `
@@ -248,7 +256,7 @@ document.addEventListener("DOMContentLoaded", () => {
       <div class="detail-section">
         <h3>Response Headers</h3>
         ${
-          Object.keys(call.responseHeaders).length > 0
+          call.responseHeaders && Object.keys(call.responseHeaders).length > 0
             ? Object.entries(call.responseHeaders)
                 .map(
                   ([key, value]) => `
@@ -477,12 +485,43 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function loadSettings(): void {
-    chrome.storage.local.get("spectrion_max_history_size", (result) => {
-      if (result.spectrion_max_history_size) {
-        maxHistorySize = result.spectrion_max_history_size as number;
-        maxHistorySizeInput!.value = maxHistorySize.toString();
+    chrome.storage.local.get(
+      ["spectrion_max_history_size", "spectrion_full_info_mode"],
+      (result) => {
+        if (result.spectrion_max_history_size) {
+          maxHistorySize = result.spectrion_max_history_size as number;
+          maxHistorySizeInput!.value = maxHistorySize.toString();
+        }
+        if (result.spectrion_full_info_mode) {
+          fullInfoModeInput!.checked = true;
+          updateFullInfoModeIndicator(true);
+        } else {
+          updateFullInfoModeIndicator(false);
+        }
       }
-    });
+    );
+  }
+
+  function updateFullInfoModeIndicator(enabled: boolean): void {
+    console.log("updateFullInfoModeIndicator called with:", enabled);
+    const statusIndicator = document.getElementById("fullInfoModeStatus");
+    const statusText = statusIndicator?.querySelector(".status-text");
+    console.log("statusIndicator:", statusIndicator, "statusText:", statusText);
+    if (statusIndicator && statusText) {
+      if (enabled) {
+        statusIndicator.classList.add("active");
+        statusText.textContent = "Full Info Mode";
+        statusIndicator.setAttribute("title", "Full Information Mode is ON");
+        console.log("Set to active mode");
+      } else {
+        statusIndicator.classList.remove("active");
+        statusText.textContent = "Reduced Mode";
+        statusIndicator.setAttribute("title", "Full Information Mode is OFF");
+        console.log("Set to reduced mode");
+      }
+    } else {
+      console.error("Could not find status indicator or text element");
+    }
   }
 
   function saveSettings(): void {
@@ -493,10 +532,37 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     maxHistorySize = newSize;
-    chrome.storage.local.set({ spectrion_max_history_size: maxHistorySize }, () => {
-      closeSettingsModal();
-      alert("Settings saved successfully!");
-    });
+    const fullInfoEnabled = fullInfoModeInput!.checked;
+
+    console.log("Saving settings:", { maxHistorySize, fullInfoEnabled });
+
+    chrome.storage.local.set(
+      { spectrion_max_history_size: maxHistorySize, spectrion_full_info_mode: fullInfoEnabled },
+      async () => {
+        closeSettingsModal();
+
+        try {
+          console.log("Sending SET_FULL_INFO_MODE message:", fullInfoEnabled);
+          await chrome.runtime.sendMessage({
+            type: "SET_FULL_INFO_MODE",
+            enabled: fullInfoEnabled,
+          });
+          console.log("SET_FULL_INFO_MODE message sent successfully");
+        } catch (e) {
+          console.error("Failed to set full info mode:", e);
+        }
+
+        updateFullInfoModeIndicator(fullInfoEnabled);
+
+        if (fullInfoEnabled) {
+          alert(
+            "Settings saved successfully!\n\nNote: Please reload the page to capture new API calls with full information (headers and bodies)."
+          );
+        } else {
+          alert("Settings saved successfully!");
+        }
+      }
+    );
   }
 
   function openSettingsModal(): void {
@@ -556,8 +622,14 @@ document.addEventListener("DOMContentLoaded", () => {
       await chrome.runtime.sendMessage({ type: "CLEAR_SESSIONS" });
       apiCalls = [];
       selectedCall = null;
+      urlHistory = [];
+      currentHistoryIndex = -1;
+      allTabSessions = [];
       renderApiCalls();
       renderApiDetails();
+      updateUrlDisplay();
+      updateUrlNavButtons();
+      renderUrlDropdown();
     }
   });
   closeDetailsBtn?.addEventListener("click", () => {

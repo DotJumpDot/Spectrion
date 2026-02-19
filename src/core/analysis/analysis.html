@@ -64,6 +64,10 @@
           </div>
         </div>
         <div class="header-actions">
+          <div class="status-indicator" id="fullInfoModeStatus" title="Full Information Mode is OFF">
+            <span class="status-dot"></span>
+            <span class="status-text">Reduced Mode</span>
+          </div>
           <button class="btn-icon" id="settingsBtn" title="Settings">
             <svg
               width="18"
@@ -256,6 +260,14 @@
             <label for="maxHistorySize">URL History Size</label>
             <input type="number" id="maxHistorySize" min="1" max="50" value="10" />
             <small>Maximum number of URLs to keep in history (1-50)</small>
+          </div>
+          <div class="setting-item">
+            <label for="fullInfoMode">Full Information Mode</label>
+            <div class="toggle-switch">
+              <input type="checkbox" id="fullInfoMode" />
+              <span class="toggle-slider"></span>
+            </div>
+            <small>Capture request/response headers and bodies (default: off)</small>
           </div>
         </div>
         <div class="modal-footer">

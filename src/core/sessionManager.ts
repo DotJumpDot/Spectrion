@@ -2,9 +2,9 @@ export interface ApiCall {
   id: string;
   url: string;
   method: string;
-  requestHeaders: Record<string, string>;
+  requestHeaders?: Record<string, string>;
   requestBody?: string;
-  responseHeaders: Record<string, string>;
+  responseHeaders?: Record<string, string>;
   responseBody?: string;
   statusCode: number;
   timestamp: number;

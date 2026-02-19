@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-02-19
+
+### Added
+
+- Full Information Mode toggle in Settings modal to capture request/response headers and bodies
+- Status indicator in header showing current mode (Reduced Mode / Full Info Mode)
+- Real-time mode update with visual feedback (gray/green dot indicator)
+- URL history clearing support in Clear button functionality
+
+### Fixed
+
+- Fixed Clear button to properly delete all API calls, sessions, and URL history
+- Fixed toggle switch click handler to properly switch between modes
+- Fixed API call details display to handle missing headers when in Reduced Mode
+- Added null checks for requestHeaders and responseHeaders to prevent errors
+- Reduced polling interval from 5s to 2s for faster mode switching
+
+### Changed
+
+- Enhanced user feedback with informative alert messages when enabling Full Information Mode
+- Improved Settings modal layout with toggle switch for mode selection
+- Updated local state clearing to include URL history and tab sessions
+
 ## [1.2.0] - 2026-02-19
 
 ### Added

@@ -171,7 +171,7 @@ describe('ApiMonitor', () => {
 
       expect(apiCall.method).toBe('GET');
       expect(apiCall.statusCode).toBe(200);
-      expect(apiCall.requestHeaders['Authorization']).toBe('Bearer token123');
+      expect(apiCall.requestHeaders?.['Authorization']).toBe('Bearer token123');
       expect(apiCall.responseBody).toBeDefined();
     });
 

@@ -301,8 +301,8 @@ describe("ApiMonitor Integration", () => {
       apiMonitor.notifyApiCall(apiCall);
 
       expect(listener).toHaveBeenCalledWith(apiCall);
-      expect(apiCall.responseHeaders['Set-Cookie']).toBeDefined();
-      expect(apiCall.responseHeaders['X-CSRF-Token']).toBeDefined();
+      expect(apiCall.responseHeaders?.['Set-Cookie']).toBeDefined();
+      expect(apiCall.responseHeaders?.['X-CSRF-Token']).toBeDefined();
     });
 
     it("should handle pagination API call", () => {
@@ -338,7 +338,7 @@ describe("ApiMonitor Integration", () => {
       apiMonitor.notifyApiCall(apiCall);
 
       expect(listener).toHaveBeenCalledWith(apiCall);
-      expect(apiCall.responseHeaders['X-Total-Count']).toBe('500');
+      expect(apiCall.responseHeaders?.['X-Total-Count']).toBe('500');
     });
 
     it("should handle error response with details", () => {

@@ -5,6 +5,26 @@ export { Session, ApiCall };
 export class StorageManager {
   private readonly SESSION_KEY = "spectrion_sessions";
   private readonly CURRENT_SESSION_KEY = "spectrion_current_session";
+  private readonly FULL_INFO_MODE_KEY = "spectrion_full_info_mode";
+
+  async getFullInfoMode(): Promise<boolean> {
+    try {
+      const result = await this.getStorage(this.FULL_INFO_MODE_KEY);
+      return result === true;
+    } catch (error) {
+      console.error("Failed to get full info mode:", error);
+      return false;
+    }
+  }
+
+  async setFullInfoMode(enabled: boolean): Promise<void> {
+    try {
+      await this.setStorage(this.FULL_INFO_MODE_KEY, enabled);
+    } catch (error) {
+      console.error("Failed to set full info mode:", error);
+      throw error;
+    }
+  }
 
   async saveSession(session: Session): Promise<void> {
     try {
@@ -82,6 +102,7 @@ export class StorageManager {
     try {
       await this.setStorage(this.SESSION_KEY, []);
       await this.setStorage(this.CURRENT_SESSION_KEY, null);
+      await this.setStorage("spectrion_url_history", []);
     } catch (error) {
       console.error("Failed to clear all sessions:", error);
       throw error;

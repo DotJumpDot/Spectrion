@@ -1,6 +1,8 @@
 # Spectrion Development Team
 
-This document outlines the roles and responsibilities of agents involved in Spectrion project.
+**Version: 1.3.0** - 2026-02-19
+
+This document outlines roles and responsibilities of agents involved in Spectrion project.
 
 ## Core Development Agents
 

@@ -49,62 +49,59 @@ chrome.webRequest.onBeforeRequest.addListener(
   (details) => {
     (async () => {
       try {
-        if (details.type === "xmlhttprequest" && details.tabId !== -1) {
-          console.log("WebRequest captured:", details.url);
+        if (details.type === "xmlhttprequest") {
+          if (details.tabId !== -1) {
+            const tabId = details.tabId;
+            let session = sessionManager.getSession(tabId);
 
-          const tabId = details.tabId;
-          let session = sessionManager.getSession(tabId);
+            if (!session) {
+              const storedSession = await storageManager.getActiveSession(tabId);
+              if (storedSession) {
+                session = storedSession;
+                sessionManager.restoreSession(tabId, session);
+              } else {
+                try {
+                  const tab = await chrome.tabs.get(tabId);
+                  if (tab.url && tab.url.startsWith("http")) {
+                    const url = new URL(tab.url);
+                    session = sessionManager.startSession(tabId, url.hostname);
+                    await storageManager.saveActiveSession(tabId, session);
+                  }
+                } catch (e) {}
+              }
+            }
 
-          if (!session) {
-            const storedSession = await storageManager.getActiveSession(tabId);
-            if (storedSession) {
-              session = storedSession;
-              sessionManager.restoreSession(tabId, session);
-            } else {
-              // Try to create session if tab info available
-              try {
-                const tab = await chrome.tabs.get(tabId);
-                if (tab.url && tab.url.startsWith("http")) {
-                  const url = new URL(tab.url);
-                  session = sessionManager.startSession(tabId, url.hostname);
-                  await storageManager.saveActiveSession(tabId, session);
+            if (session) {
+              const fullInfoMode = await storageManager.getFullInfoMode();
+              let requestBody: string | undefined;
+
+              if (
+                fullInfoMode &&
+                details.requestBody &&
+                details.requestBody.raw &&
+                details.requestBody.raw[0]?.bytes
+              ) {
+                try {
+                  const textDecoder = new TextDecoder();
+                  const rawBytes = new Uint8Array(details.requestBody.raw[0].bytes);
+                  requestBody = textDecoder.decode(rawBytes);
+                } catch (e) {
+                  requestBody = undefined;
                 }
-              } catch (e) {
-                // Tab might be closed or inaccessible
               }
-            }
-          }
 
-          if (session) {
-            console.log("Adding API call to session:", session.id);
-            let requestBody: string | undefined;
-            if (
-              details.requestBody &&
-              details.requestBody.raw &&
-              details.requestBody.raw[0]?.bytes
-            ) {
-              try {
-                const textDecoder = new TextDecoder();
-                const rawBytes = new Uint8Array(details.requestBody.raw[0].bytes);
-                requestBody = textDecoder.decode(rawBytes);
-              } catch (e) {
-                requestBody = undefined;
-              }
+              sessionManager.addApiCall(tabId, {
+                id: `req-${details.requestId}`,
+                url: details.url,
+                method: details.method || "GET",
+                requestHeaders: fullInfoMode ? ({} as Record<string, string>) : undefined,
+                requestBody: requestBody,
+                responseHeaders: fullInfoMode ? ({} as Record<string, string>) : undefined,
+                statusCode: 0,
+                timestamp: Date.now(),
+              });
+              await storageManager.saveActiveSession(tabId, session);
             }
-
-            sessionManager.addApiCall(tabId, {
-              id: `req-${details.requestId}`,
-              url: details.url,
-              method: details.method || "GET",
-              requestHeaders: {},
-              requestBody: requestBody,
-              responseHeaders: {},
-              statusCode: 0,
-              timestamp: Date.now(),
-            });
-            await storageManager.saveActiveSession(tabId, session);
-          } else {
-            console.log("No active session found for tab:", tabId);
           }
         }
       } catch (error) {
@@ -121,30 +118,38 @@ chrome.webRequest.onBeforeSendHeaders.addListener(
   (details) => {
     (async () => {
       try {
-        if (details.type === "xmlhttprequest" && details.tabId !== -1) {
-          const tabId = details.tabId;
-          let session = sessionManager.getSession(tabId);
-          if (!session) {
-            const storedSession = await storageManager.getActiveSession(tabId);
-            if (storedSession) {
-              session = storedSession;
-              sessionManager.restoreSession(tabId, session);
-            }
-          }
+        if (details.type === "xmlhttprequest") {
+          if (details.tabId !== -1) {
+            const tabId = details.tabId;
+            const fullInfoMode = await storageManager.getFullInfoMode();
 
-          if (session) {
-            const apiCall = session.apiCalls.find((call) => call.id === `req-${details.requestId}`);
-            if (apiCall) {
-              const headers: Record<string, string> = {};
-              if (details.requestHeaders) {
-                details.requestHeaders.forEach((header) => {
-                  if (header.name && header.value) {
-                    headers[header.name] = header.value;
-                  }
-                });
+            if (!fullInfoMode) return;
+
+            let session = sessionManager.getSession(tabId);
+            if (!session) {
+              const storedSession = await storageManager.getActiveSession(tabId);
+              if (storedSession) {
+                session = storedSession;
+                sessionManager.restoreSession(tabId, session);
               }
-              apiCall.requestHeaders = headers;
-              await storageManager.saveActiveSession(tabId, session);
+            }
+
+            if (session) {
+              const apiCall = session.apiCalls.find(
+                (call) => call.id === `req-${details.requestId}`
+              );
+              if (apiCall) {
+                const headers: Record<string, string> = {};
+                if (details.requestHeaders) {
+                  details.requestHeaders.forEach((header) => {
+                    if (header.name && header.value) {
+                      headers[header.name] = header.value;
+                    }
+                  });
+                }
+                apiCall.requestHeaders = headers;
+                await storageManager.saveActiveSession(tabId, session);
+              }
             }
           }
         }
@@ -162,22 +167,27 @@ chrome.webRequest.onCompleted.addListener(
   (details) => {
     (async () => {
       try {
-        if (details.type === "xmlhttprequest" && details.tabId !== -1) {
-          const tabId = details.tabId;
-          let session = sessionManager.getSession(tabId);
-          if (!session) {
-            const storedSession = await storageManager.getActiveSession(tabId);
-            if (storedSession) {
-              session = storedSession;
-              sessionManager.restoreSession(tabId, session);
-            }
-          }
+        if (details.type === "xmlhttprequest") {
+          if (details.tabId !== -1) {
+            const tabId = details.tabId;
+            const fullInfoMode = await storageManager.getFullInfoMode();
 
-          if (session) {
-            const apiCall = session.apiCalls.find((call) => call.id === `req-${details.requestId}`);
-            if (apiCall) {
-              apiCall.responseHeaders = details.responseHeaders
-                ? details.responseHeaders.reduce(
+            let session = sessionManager.getSession(tabId);
+            if (!session) {
+              const storedSession = await storageManager.getActiveSession(tabId);
+              if (storedSession) {
+                session = storedSession;
+                sessionManager.restoreSession(tabId, session);
+              }
+            }
+
+            if (session) {
+              const apiCall = session.apiCalls.find(
+                (call) => call.id === `req-${details.requestId}`
+              );
+              if (apiCall) {
+                if (fullInfoMode && details.responseHeaders) {
+                  apiCall.responseHeaders = details.responseHeaders.reduce(
                     (acc, header) => {
                       if (header.value !== undefined) {
                         acc[header.name] = header.value;
@@ -185,11 +195,12 @@ chrome.webRequest.onCompleted.addListener(
                       return acc;
                     },
                     {} as Record<string, string>
-                  )
-                : {};
-              apiCall.statusCode = details.statusCode;
-              apiCall.duration = details.timeStamp - apiCall.timestamp;
-              await storageManager.saveActiveSession(tabId, session);
+                  );
+                }
+                apiCall.statusCode = details.statusCode;
+                apiCall.duration = details.timeStamp - apiCall.timestamp;
+                await storageManager.saveActiveSession(tabId, session);
+              }
             }
           }
         }
@@ -198,30 +209,35 @@ chrome.webRequest.onCompleted.addListener(
       }
     })();
   },
-  { urls: ["<all_urls>"] }
+  { urls: ["<all_urls>"] },
+  ["responseHeaders"]
 );
 
 chrome.webRequest.onErrorOccurred.addListener(
   (details) => {
     (async () => {
       try {
-        if (details.type === "xmlhttprequest" && details.tabId !== -1) {
-          const tabId = details.tabId;
-          let session = sessionManager.getSession(tabId);
-          if (!session) {
-            const storedSession = await storageManager.getActiveSession(tabId);
-            if (storedSession) {
-              session = storedSession;
-              sessionManager.restoreSession(tabId, session);
+        if (details.type === "xmlhttprequest") {
+          if (details.tabId !== -1) {
+            const tabId = details.tabId;
+            let session = sessionManager.getSession(tabId);
+            if (!session) {
+              const storedSession = await storageManager.getActiveSession(tabId);
+              if (storedSession) {
+                session = storedSession;
+                sessionManager.restoreSession(tabId, session);
+              }
             }
-          }
 
-          if (session) {
-            const apiCall = session.apiCalls.find((call) => call.id === `req-${details.requestId}`);
-            if (apiCall) {
-              apiCall.statusCode = 0;
-              apiCall.duration = details.timeStamp - apiCall.timestamp;
-              await storageManager.saveActiveSession(tabId, session);
+            if (session) {
+              const apiCall = session.apiCalls.find(
+                (call) => call.id === `req-${details.requestId}`
+              );
+              if (apiCall) {
+                apiCall.statusCode = 0;
+                apiCall.duration = details.timeStamp - apiCall.timestamp;
+                await storageManager.saveActiveSession(tabId, session);
+              }
             }
           }
         }
@@ -338,6 +354,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       });
       return true;
     }
+  }
+
+  if (message.type === "SET_FULL_INFO_MODE") {
+    storageManager.setFullInfoMode(message.enabled).then(() => {
+      sendResponse({ success: true });
+    });
+    return true;
+  }
+
+  if (message.type === "GET_FULL_INFO_MODE") {
+    storageManager.getFullInfoMode().then((enabled) => {
+      sendResponse({ enabled });
+    });
+    return true;
   }
 });
 
