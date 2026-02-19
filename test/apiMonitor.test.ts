@@ -1,5 +1,5 @@
 import { ApiMonitor } from '../src/core/apiMonitor';
-import { ApiCall } from '../src/core/sessionManager';
+import { ApiCall } from '../src/core/storageManager';
 
 describe('ApiMonitor', () => {
   let apiMonitor: ApiMonitor;

@@ -5,6 +5,28 @@ All notable changes to Spectrion will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-02-19
+
+### Added
+
+- URL/Title toggle button with swap icon for better UX
+- Improved dropdown UI in popup with custom styled dropdown
+- Analysis dropdown now reflects current display mode (URL or site name)
+- Better visual feedback with hover states and animations
+- Tab selector shows both title and hostname for clarity
+
+### Changed
+
+- Replaced checkmark icon with more appropriate swap icon
+- Enhanced dropdown styling with smooth animations and transitions
+- Improved tab selector with icon placeholder and structured layout
+
+### Fixed
+
+- Analysis dropdown now correctly shows URLs when in URL mode and site names when in site name mode
+- Fixed TypeScript type safety issues in popup dropdown
+- Dropdown now re-renders when switching between URL and title display modes
+
 ## [1.0.0] - 2026-02-19
 
 ### Added
@@ -40,5 +62,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - TypeScript strict mode enabled
 - Comprehensive unit and integration tests
 
-[Unreleased]: https://github.com/DotJumpDot/Spectrion/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/DotJumpDot/Spectrion/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/DotJumpDot/Spectrion/releases/tag/v1.1.0
 [1.0.0]: https://github.com/DotJumpDot/Spectrion/releases/tag/v1.0.0

@@ -1,4 +1,5 @@
-import { SessionManager, ApiCall } from "../src/core/sessionManager";
+import { SessionManager } from "../src/core/sessionManager";
+import { ApiCall } from "../src/core/storageManager";
 
 describe("SessionManager", () => {
   let sessionManager: SessionManager;
@@ -82,6 +83,8 @@ describe("SessionManager", () => {
 
       expect(() => sessionManager.addApiCall(1, apiCall)).not.toThrow();
     });
+  });
+
   describe("Session Isolation", () => {
     it("should maintain separate sessions for different tabs", () => {
       const session1 = sessionManager.startSession(1, "example.com");
@@ -153,5 +156,4 @@ describe("SessionManager", () => {
       expect(retrieved?.domain).toBe("restored.com");
     });
   });
-});
 });

@@ -1,3 +1,9 @@
+interface TabInfo {
+  id: number;
+  url: string;
+  title: string;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const openAnalysisBtn = document.getElementById("openAnalysisBtn") as HTMLButtonElement;
   const clearBtn = document.getElementById("clearBtn") as HTMLButtonElement;
@@ -5,6 +11,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const apiCallsCountElement = document.getElementById("apiCallsCount") as HTMLElement;
   const sessionTimeElement = document.getElementById("sessionTime") as HTMLElement;
   const errorMessage = document.getElementById("errorMessage") as HTMLElement;
+  const tabDropdown = document.getElementById("tabDropdown") as HTMLElement;
+  const tabTrigger = document.getElementById("tabTrigger") as HTMLButtonElement;
+  const tabValue = document.getElementById("tabValue") as HTMLElement;
+  const tabMenu = document.getElementById("tabMenu") as HTMLElement;
+  const tabList = document.getElementById("tabList") as HTMLElement;
+
+  let selectedTabId: number | null = null;
+  let isDropdownOpen = false;
 
   function showError(message: string): void {
     errorMessage.textContent = message;
@@ -31,16 +45,103 @@ document.addEventListener("DOMContentLoaded", () => {
     statusElement.style.color = "#2e7d32";
   }
 
-  async function loadStats(): Promise<void> {
-    try {
-      const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-      const activeTab = tabs[0];
+  function toggleDropdown(): void {
+    isDropdownOpen = !isDropdownOpen;
+    if (isDropdownOpen) {
+      tabDropdown.classList.add("open");
+      tabMenu.classList.add("visible");
+    } else {
+      tabDropdown.classList.remove("open");
+      tabMenu.classList.remove("visible");
+    }
+  }
 
-      if (!activeTab || !activeTab.id) {
+  function closeDropdown(): void {
+    isDropdownOpen = false;
+    tabDropdown.classList.remove("open");
+    tabMenu.classList.remove("visible");
+  }
+
+  function selectTab(tab: chrome.tabs.Tab): void {
+    selectedTabId = tab.id!;
+    if (tab.url) {
+      const url = new URL(tab.url);
+      tabValue.textContent = `${tab.title || url.hostname}`;
+      tabValue.title = tab.url;
+    }
+    closeDropdown();
+    loadStats();
+  }
+
+  async function loadTabs(): Promise<void> {
+    try {
+      const tabs = await chrome.tabs.query({}) as chrome.tabs.Tab[];
+      const httpTabs = tabs.filter(tab => tab.url && tab.url.startsWith("http"));
+
+      tabList.innerHTML = "";
+
+      if (httpTabs.length === 0) {
+        const emptyDiv = document.createElement("div");
+        emptyDiv.className = "dropdown-empty";
+        emptyDiv.textContent = "No tabs with HTTP/HTTPS pages";
+        tabList.appendChild(emptyDiv);
+        tabValue.textContent = "No tabs available";
         return;
       }
 
-      const tabId = activeTab.id;
+      const activeTab = httpTabs.find(tab => tab.active);
+      
+      const orderedTabs = activeTab 
+        ? [activeTab, ...httpTabs.filter(tab => tab.id !== activeTab.id)]
+        : httpTabs;
+
+      orderedTabs.forEach(tab => {
+        const url = new URL(tab.url!);
+        const item = document.createElement("div");
+        item.className = "dropdown-item";
+        if (activeTab && tab.id === activeTab.id) {
+          item.classList.add("selected");
+        }
+
+        const iconDiv = document.createElement("div");
+        iconDiv.className = "dropdown-item-icon";
+        
+        const textDiv = document.createElement("div");
+        textDiv.className = "dropdown-item-text";
+        textDiv.textContent = tab.title || url.hostname;
+        
+        const urlDiv = document.createElement("div");
+        urlDiv.className = "dropdown-item-url";
+        urlDiv.textContent = url.hostname;
+
+        textDiv.appendChild(urlDiv);
+        item.appendChild(iconDiv);
+        item.appendChild(textDiv);
+
+        item.addEventListener("click", () => selectTab(tab));
+        tabList.appendChild(item);
+      });
+
+      if (activeTab && activeTab.id) {
+        if (activeTab.url) {
+          const url = new URL(activeTab.url);
+          tabValue.textContent = activeTab.title || url.hostname;
+          tabValue.title = activeTab.url;
+        }
+        selectedTabId = activeTab.id;
+      }
+    } catch (error) {
+      console.error("Error loading tabs:", error);
+    }
+  }
+
+  async function loadStats(): Promise<void> {
+    try {
+      if (!selectedTabId) {
+        return;
+      }
+
+      const tabId = selectedTabId;
 
       const apiCalls = await chrome.runtime.sendMessage({ type: "GET_API_CALLS", tabId });
       if (apiCalls) {
@@ -58,20 +159,28 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     } catch (error) {
       console.error("Error loading stats:", error);
-      // showError('Failed to load statistics'); // Suppress to avoid spam
     }
   }
+
+  tabTrigger.addEventListener("click", (e) => {
+    e.stopPropagation();
+    toggleDropdown();
+  });
+
+  document.addEventListener("click", (e) => {
+    if (isDropdownOpen && !tabDropdown.contains(e.target as Node)) {
+      closeDropdown();
+    }
+  });
 
   openAnalysisBtn.addEventListener("click", async () => {
     try {
       updateStatus();
       
-      const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-      const activeTab = tabs[0];
       let analysisUrl = chrome.runtime.getURL("analysis.html");
       
-      if (activeTab && activeTab.id) {
-        analysisUrl += `?tabId=${activeTab.id}`;
+      if (selectedTabId) {
+        analysisUrl += `?tabId=${selectedTabId}`;
       }
       
       await chrome.tabs.create({ url: analysisUrl });
@@ -97,6 +206,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  loadTabs();
   loadStats();
   setInterval(loadStats, 2000);
 });

@@ -13,6 +13,21 @@
       <span class="status" id="status">Ready</span>
     </div>
 
+    <div class="tab-selector">
+      <label for="tabSelect">Select Tab:</label>
+      <div class="custom-dropdown" id="tabDropdown">
+        <button class="dropdown-trigger" id="tabTrigger">
+          <span class="dropdown-value" id="tabValue">Select a tab</span>
+          <svg class="dropdown-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="4,6 8,10 12,6"/>
+          </svg>
+        </button>
+        <div class="dropdown-menu" id="tabMenu">
+          <div class="dropdown-list" id="tabList"></div>
+        </div>
+      </div>
+    </div>
+
     <div class="stats">
       <div class="stat-item">
         <span class="stat-label">API Calls</span>

@@ -242,6 +242,47 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     });
     return true;
   }
+
+  if (message.type === "GET_ALL_ACTIVE_SESSIONS") {
+    chrome.tabs.query({}, async (tabs) => {
+      const sessions = [];
+      for (const tab of tabs) {
+        if (tab.id && tab.url && tab.url.startsWith("http")) {
+          const session = await storageManager.getActiveSession(tab.id);
+          if (session) {
+            sessions.push({
+              tabId: tab.id,
+              url: tab.url,
+              title: tab.title,
+              favicon: tab.favIconUrl,
+              session,
+            });
+          }
+        }
+      }
+      sendResponse(sessions);
+    });
+    return true;
+  }
+
+  if (message.type === "GET_TAB_INFO") {
+    const tabId = message.tabId;
+    if (tabId) {
+      chrome.tabs.get(tabId, (tab) => {
+        if (chrome.runtime.lastError) {
+          sendResponse(null);
+        } else {
+          sendResponse({
+            tabId: tab.id,
+            url: tab.url,
+            title: tab.title,
+            favicon: tab.favIconUrl,
+          });
+        }
+      });
+      return true;
+    }
+  }
 });
 
 // Periodic save not strictly needed if we save on every update, but good for safety

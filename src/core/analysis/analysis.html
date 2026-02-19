@@ -1,102 +1,269 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Spectrion - API Analysis</title>
-  <link rel="stylesheet" href="analysis.css">
-</head>
-<body>
-  <div class="container">
-    <header class="header">
-      <div class="header-left">
-        <h1>Spectrion</h1>
-        <span class="badge" id="callCount">0 calls</span>
-      </div>
-      <div class="header-actions">
-        <button class="btn secondary" id="refreshBtn">
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M16 8A8 8 0 1 1 2 8"/>
-            <path d="M16 8l-4-4"/>
-            <path d="M16 8l-4 4"/>
-          </svg>
-          Refresh
-        </button>
-        <button class="btn secondary" id="exportBtn">
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-            <polyline points="7,10 12,15 17,10"/>
-            <line x1="12" y1="15" x2="12" y2="3"/>
-          </svg>
-          Export
-        </button>
-        <button class="btn danger" id="clearBtn">
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M3 6h18"/>
-            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-          </svg>
-          Clear
-        </button>
-      </div>
-    </header>
-
-    <div class="search-bar">
-      <input type="text" id="searchInput" placeholder="Search API calls by URL or method...">
-      <select id="methodFilter">
-        <option value="all">All Methods</option>
-        <option value="GET">GET</option>
-        <option value="POST">POST</option>
-        <option value="PUT">PUT</option>
-        <option value="DELETE">DELETE</option>
-        <option value="PATCH">PATCH</option>
-      </select>
-      <select id="statusFilter">
-        <option value="all">All Status</option>
-        <option value="success">Success (2xx)</option>
-        <option value="redirect">Redirect (3xx)</option>
-        <option value="error">Error (4xx, 5xx)</option>
-      </select>
-    </div>
-
-    <div class="main-content">
-      <div class="api-list">
-        <div class="api-list-header">
-          <h2>API Calls</h2>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spectrion - API Analysis</title>
+    <link rel="stylesheet" href="analysis.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header class="header">
+        <div class="header-left">
+          <h1>Spectrion</h1>
+          <span class="badge" id="callCount">0 calls</span>
         </div>
-        <div id="apiCallsContainer" class="api-calls">
-          <div class="empty-state">
-            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="#999" stroke-width="1.5">
-              <circle cx="24" cy="24" r="20"/>
-              <path d="M24 16v16M16 24h16"/>
+        <div class="header-center">
+          <div class="url-nav">
+            <button class="nav-arrow" id="prevUrlBtn" title="Previous URL">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polyline points="10,2 4,8 10,14" />
+              </svg>
+            </button>
+            <div class="url-selector" id="urlSelector">
+              <div class="current-url" id="currentUrl" title="Click to select URL">
+                <div class="url-text" id="urlText">No URL selected</div>
+                <button class="url-toggle" id="urlToggleBtn" title="Toggle URL/Title">
+                  <svg
+                    class="swap-icon"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <path d="M3 10l4-4 4 4" />
+                    <path d="M13 6l-4 4-4-4" />
+                  </svg>
+                </button>
+              </div>
+              <div class="url-dropdown" id="urlDropdown">
+                <div class="url-dropdown-list" id="urlDropdownList"></div>
+              </div>
+            </div>
+            <button class="nav-arrow" id="nextUrlBtn" title="Next URL">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polyline points="6,2 12,8 6,14" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button class="btn-icon" id="settingsBtn" title="Settings">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 18 18"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="3" />
+              <path
+                d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+              />
             </svg>
-            <p>No API calls captured yet</p>
-            <small>Start browsing to see API calls here</small>
+          </button>
+          <button class="btn-icon" id="darkModeToggle" title="Toggle Dark Mode">
+            <svg
+              class="sun-icon"
+              width="18"
+              height="18"
+              viewBox="0 0 18 18"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="9" cy="9" r="4" />
+              <path
+                d="M9 1v2M9 15v2M3 9H1M17 9h-2M4.22 4.22l1.42 1.42M12.36 12.36l1.42 1.42M4.22 13.78l1.42-1.42M12.36 5.64l1.42-1.42"
+              />
+            </svg>
+            <svg
+              class="moon-icon"
+              width="18"
+              height="18"
+              viewBox="0 0 18 18"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              style="display: none"
+            >
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+            </svg>
+          </button>
+          <button class="btn secondary" id="refreshBtn">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 18 18"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M16 8A8 8 0 1 1 2 8" />
+              <path d="M16 8l-4-4" />
+              <path d="M16 8l-4 4" />
+            </svg>
+            Refresh
+          </button>
+          <button class="btn secondary" id="exportBtn">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 18 18"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7,10 12,15 17,10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            Export
+          </button>
+          <button class="btn danger" id="clearBtn">
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 18 18"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M3 6h18" />
+              <path
+                d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+              />
+            </svg>
+            Clear
+          </button>
+        </div>
+      </header>
+
+      <div class="search-bar">
+        <input type="text" id="searchInput" placeholder="Search API calls by URL or method..." />
+        <select id="methodFilter">
+          <option value="all">All Methods</option>
+          <option value="GET">GET</option>
+          <option value="POST">POST</option>
+          <option value="PUT">PUT</option>
+          <option value="DELETE">DELETE</option>
+          <option value="PATCH">PATCH</option>
+        </select>
+        <select id="statusFilter">
+          <option value="all">All Status</option>
+          <option value="success">Success (2xx)</option>
+          <option value="redirect">Redirect (3xx)</option>
+          <option value="error">Error (4xx, 5xx)</option>
+        </select>
+      </div>
+
+      <div class="main-content">
+        <div class="api-list">
+          <div class="api-list-header">
+            <h2>API Calls</h2>
+          </div>
+          <div id="apiCallsContainer" class="api-calls">
+            <div class="empty-state">
+              <svg
+                width="48"
+                height="48"
+                viewBox="0 0 48 48"
+                fill="none"
+                stroke="#999"
+                stroke-width="1.5"
+              >
+                <circle cx="24" cy="24" r="20" />
+                <path d="M24 16v16M16 24h16" />
+              </svg>
+              <p>No API calls captured yet</p>
+              <small>Start browsing to see API calls here</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="api-details">
+          <div class="api-details-header">
+            <h2>Request Details</h2>
+            <button class="btn-icon" id="closeDetailsBtn">
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M6 6l12 12M18 6l-12 12" />
+              </svg>
+            </button>
+          </div>
+          <div id="apiDetailsContent" class="api-details-content">
+            <div class="empty-state">
+              <svg
+                width="48"
+                height="48"
+                viewBox="0 0 48 48"
+                fill="none"
+                stroke="#999"
+                stroke-width="1.5"
+              >
+                <rect x="12" y="8" width="24" height="32" rx="2" />
+                <path d="M20 20h8M20 26h8" />
+              </svg>
+              <p>Select an API call to view details</p>
+            </div>
           </div>
         </div>
       </div>
+    </div>
 
-      <div class="api-details">
-        <div class="api-details-header">
-          <h2>Request Details</h2>
-          <button class="btn-icon" id="closeDetailsBtn">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M6 6l12 12M18 6l-12 12"/>
+    <div class="modal" id="settingsModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Settings</h2>
+          <button class="btn-icon" id="closeSettingsBtn">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M6 6l12 12M18 6l-12 12" />
             </svg>
           </button>
         </div>
-        <div id="apiDetailsContent" class="api-details-content">
-          <div class="empty-state">
-            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="#999" stroke-width="1.5">
-              <rect x="12" y="8" width="24" height="32" rx="2"/>
-              <path d="M20 20h8M20 26h8"/>
-            </svg>
-            <p>Select an API call to view details</p>
+        <div class="modal-body">
+          <div class="setting-item">
+            <label for="maxHistorySize">URL History Size</label>
+            <input type="number" id="maxHistorySize" min="1" max="50" value="10" />
+            <small>Maximum number of URLs to keep in history (1-50)</small>
           </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn primary" id="saveSettingsBtn">Save Settings</button>
         </div>
       </div>
     </div>
-  </div>
 
-  <script src="analysis.js"></script>
-</body>
+    <script src="analysis.js"></script>
+  </body>
 </html>
