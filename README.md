@@ -1,60 +1,102 @@
-# Spectrion
+<div align="center">
 
-A powerful browser extension for analyzing API calls across browsing sessions with real-time monitoring and session management.
+  <h1>Spectrion 📡</h1>
 
-Version 1.4.1 - 🎉
+  <p>The most powerful browser extension for analyzing API calls across browsing sessions with <b>real-time monitoring</b> and <b>session management</b></p>
 
-View on GitHub
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Version](https://badge.fury.io/js/spectrion.svg)](https://www.npmjs.com/package/spectrion)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.3+-3178C6.svg)](https://www.typescriptlang.org/)
+[![Zero Runtime Dependencies](https://img.shields.io/badge/Zero%20Runtime%20Dependencies-2ecc71.svg)](https://github.com/DotJumpDot/Spectrion)
+
+<b>Version 1.4.1 - Official Release</b> 🚀
+
+[View on GitHub](https://github.com/DotJumpDot/Spectrion)
+
+</div>
+
+---
 
 ## Table of Contents
 
-- [Spectrion](#spectrion)
-  - [Table of Contents](#table-of-contents)
-  - [About](#about)
-  - [Features](#features)
-  - [Installation](#installation)
-    - [Chrome/Edge](#chromeedge)
-    - [Firefox](#firefox)
-  - [Quick Start](#quick-start)
+- [Table of Contents](#table-of-contents)
+- [About](#about)
+- [Features](#features)
+- [Installation](#installation)
+  - [Chrome/Edge](#chromeedge)
+  - [Firefox](#firefox)
+- [Quick Start](#quick-start)
   - [Usage Examples](#usage-examples)
-    - [Basic Monitoring](#basic-monitoring)
-    - [Accessing Captured Data](#accessing-captured-data)
-    - [Real-time Notifications](#real-time-notifications)
-    - [Session Management](#session-management)
-  - [API Reference](#api-reference)
-    - [Main Class](#main-class)
-    - [ApiMonitor](#apimonitor)
-    - [SessionManager](#sessionmanager)
-    - [StorageManager](#storagemanager)
-  - [Browser Compatibility](#browser-compatibility)
-  - [Development](#development)
-    - [Setup](#setup)
-    - [Build](#build)
-    - [Test](#test)
-    - [Project Structure](#project-structure)
-  - [Contributing](#contributing)
-    - [Development Setup](#development-setup)
-    - [Development Commands](#development-commands)
-  - [License](#license)
-  - [Changelog](#changelog)
-  - [Support](#support)
+  - [Interface include](#interface-include)
+- [API Reference](#api-reference)
+  - [Main Class](#main-class)
+  - [ApiMonitor](#apimonitor)
+  - [SessionManager](#sessionmanager)
+  - [StorageManager](#storagemanager)
+- [Use Cases](#use-cases)
+  - [1. API Debugging](#1-api-debugging)
+  - [2. Performance Analysis](#2-performance-analysis)
+  - [3. Session Tracking](#3-session-tracking)
+- [License](#license)
+- [Support](#support)
+
+---
 
 ## About
 
-Spectrion is a feature-rich browser extension that provides comprehensive API monitoring and analysis capabilities. Built with TypeScript, it captures all HTTP/HTTPS requests made by your browser, organizes them into sessions, and provides detailed insights with a beautiful interface. Perfect for developers, QA engineers, and anyone who needs to debug or analyze web API behavior.
+Spectrion is a feature-rich browser extension that provides comprehensive API monitoring and analysis capabilities. Built with TypeScript, it captures all HTTP/HTTPS requests made by your browser, organizes them into sessions, and provides detailed insights with a beautiful interface. Perfect for developers, QA engineers, and anyone who needs to debug or analyze web API behavior. Most API monitoring tools only show you raw request/response data. Spectrion goes further by **organizing calls into sessions** and providing **real-time notifications** with detailed timing and header analysis.
+
+---
 
 ## Features
 
-- 📡 **Real-time API Monitoring**: Automatically intercepts fetch and XMLHttpRequest calls
-- 🏷️ **Session Management**: Tracks API calls per tab with intelligent session organization
-- 💾 **Persistent Storage**: Stores session data across browser sessions using Chrome storage API
-- 🎨 **Beautiful UI**: Modern popup and analysis interfaces with visual feedback
-- 🔍 **Detailed Insights**: View headers, status codes, timing, and request/response data
-- 🌐 **Cross-Browser**: Compatible with Chrome, Firefox, and Edge
-- 📝 **TypeScript**: Full type definitions and type-safe operations
-- 🔄 **Event-Driven**: Real-time notifications for captured API calls
-- 🧪 **Well-Tested**: Comprehensive test coverage with Jest
-- 📦 **Zero Runtime Dependencies**: Pure TypeScript implementation
+<div align="center">
+
+  <table>
+    <tr>
+      <td align="center" width="25%">
+        📡<br><b>Real-time API Monitoring</b>
+      </td>
+      <td align="center" width="25%">
+        🏷️<br><b>Session Management</b>
+      </td>
+      <td align="center" width="25%">
+        �<br><b>Persistent Storage</b>
+      </td>
+      <td align="center" width="25%">
+        🎨<br><b>Beautiful UI</b>
+      </td>
+    </tr>
+    <tr>
+      <td align="center" width="25%">
+        🔍<br><b>Detailed Insights</b>
+      </td>
+      <td align="center" width="25%">
+        🌐<br><b>Cross-Browser</b>
+      </td>
+      <td align="center" width="25%">
+        📝<br><b>TypeScript</b>
+      </td>
+      <td align="center" width="25%">
+        🔄<br><b>Event-Driven</b>
+      </td>
+    </tr>
+  </table>
+
+</div>
+
+- **Real-time API Monitoring**: Automatically intercepts fetch and XMLHttpRequest calls
+- **Session Management**: Tracks API calls per tab with intelligent session organization
+- **Persistent Storage**: Stores session data across browser sessions using Chrome storage API
+- **Beautiful UI**: Modern popup and analysis interfaces with visual feedback
+- **Detailed Insights**: View headers, status codes, timing, and request/response data
+- **Cross-Browser**: Compatible with Chrome, Firefox, and Edge
+- **TypeScript**: Full type definitions and type-safe operations
+- **Event-Driven**: Real-time notifications for captured API calls
+- **Well-Tested**: Comprehensive test coverage with Jest
+- **Zero Runtime Dependencies**: Pure TypeScript implementation
+
+---
 
 ## Installation
 
@@ -96,9 +138,11 @@ bun run build
 # 3. Select manifest.json file
 ```
 
+---
+
 ## Quick Start
 
-Once installed, Spectrion automatically starts monitoring all API calls:
+### Usage Examples
 
 ```typescript
 // Spectrion automatically initializes on page load
@@ -116,10 +160,6 @@ spectrion.apiMonitor.onApiCall((call) => {
 });
 ```
 
-## Usage Examples
-
-### Basic Monitoring
-
 ```typescript
 // Spectrion automatically monitors all fetch and XHR requests
 fetch("https://api.example.com/data", {
@@ -131,7 +171,7 @@ fetch("https://api.example.com/data", {
 });
 ```
 
-### Accessing Captured Data
+### Interface include
 
 ```typescript
 import { spectrion } from "./src/spectrion";
@@ -145,8 +185,6 @@ const session = await spectrion.storageManager.getSessionById("session-id");
 // Get active session for a tab
 const activeSession = await spectrion.storageManager.getActiveSession(tabId);
 ```
-
-### Real-time Notifications
 
 ```typescript
 import { spectrion } from "./src/spectrion";
@@ -163,7 +201,94 @@ spectrion.apiMonitor.onApiCall((call) => {
 spectrion.apiMonitor.offApiCall(listener);
 ```
 
-### Session Management
+---
+
+## API Reference
+
+### Main Class
+
+| Method          | Description                          | Parameters | Returns         |
+| --------------- | ------------------------------------ | ---------- | --------------- |
+| `getInstance()` | Get the singleton Spectrion instance | None       | Spectrion       |
+| `initialize()`  | Initialize Spectrion modules         | None       | Promise\<void\> |
+
+### ApiMonitor
+
+**Methods**
+
+| Method                 | Description                           | Parameters                                                  | Returns |
+| ---------------------- | ------------------------------------- | ----------------------------------------------------------- | ------- |
+| `onApiCall(listener)`  | Register callback for API call events | `listener` (function) - Function called with ApiCall object | void    |
+| `offApiCall(listener)` | Remove API call listener              | `listener` (function) - Listener to remove                  | void    |
+| `interceptFetch()`     | Intercept window.fetch calls          | None                                                        | void    |
+| `interceptXHR()`       | Intercept XMLHttpRequest calls        | None                                                        | void    |
+
+### SessionManager
+
+**Methods**
+
+| Method                           | Description                | Parameters                                                               | Returns              |
+| -------------------------------- | -------------------------- | ------------------------------------------------------------------------ | -------------------- |
+| `getSession(tabId)`              | Get active session for tab | `tabId` (number) - Browser tab ID                                        | Session \| undefined |
+| `startSession(tabId, domain)`    | Start a new session        | `tabId` (number) - Browser tab ID<br>`domain` (string) - Domain name     | Session              |
+| `endSession(tabId)`              | End active session         | `tabId` (number) - Browser tab ID                                        | void                 |
+| `addApiCall(tabId, apiCall)`     | Add API call to session    | `tabId` (number) - Browser tab ID<br>`apiCall` (ApiCall) - API call data | void                 |
+| `restoreSession(tabId, session)` | Restore a session          | `tabId` (number) - Browser tab ID<br>`session` (Session) - Session data  | void                 |
+
+### StorageManager
+
+**Methods**
+
+| Method                              | Description                 | Parameters                                                              | Returns                         |
+| ----------------------------------- | --------------------------- | ----------------------------------------------------------------------- | ------------------------------- |
+| `saveSession(session)`              | Save session to storage     | `session` (Session) - Session data                                      | Promise\<void\>                 |
+| `updateSession(session)`            | Update existing session     | `session` (Session) - Session data                                      | Promise\<void\>                 |
+| `getAllSessions()`                  | Get all stored sessions     | None                                                                    | Promise\<Session[]\>            |
+| `getSessionById(id)`                | Get session by ID           | `id` (string) - Session ID                                              | Promise\<Session \| undefined\> |
+| `saveActiveSession(tabId, session)` | Save active session for tab | `tabId` (number) - Browser tab ID<br>`session` (Session) - Session data | Promise\<void\>                 |
+| `getActiveSession(tabId)`           | Get active session for tab  | `tabId` (number) - Browser tab ID                                       | Promise\<Session \| undefined\> |
+| `clearActiveSession(tabId)`         | Clear active session        | `tabId` (number) - Browser tab ID                                       | Promise\<void\>                 |
+| `clearAllSessions()`                | Clear all stored sessions   | None                                                                    | Promise\<void\>                 |
+
+---
+
+## Use Cases
+
+### 1. API Debugging
+
+Debug API calls in real-time during development:
+
+```typescript
+import { spectrion } from "./src/spectrion";
+
+spectrion.apiMonitor.onApiCall((call) => {
+  if (call.url.includes("/api/")) {
+    console.log(`API Call: ${call.method} ${call.url}`);
+    console.log(`Status: ${call.statusCode}`);
+    console.log(`Headers:`, call.headers);
+    console.log(`Body:`, call.body);
+  }
+});
+```
+
+### 2. Performance Analysis
+
+Track API response times for performance optimization:
+
+```typescript
+import { spectrion } from "./src/spectrion";
+
+spectrion.apiMonitor.onApiCall((call) => {
+  if (call.duration > 1000) {
+    console.warn(`Slow API detected: ${call.url} took ${call.duration}ms`);
+    console.warn(`Status: ${call.statusCode}, Method: ${call.method}`);
+  }
+});
+```
+
+### 3. Session Tracking
+
+Organize and track API calls across different browsing sessions:
 
 ```typescript
 import { spectrion } from "./src/spectrion";
@@ -181,181 +306,18 @@ spectrion.sessionManager.endSession(tabId);
 await spectrion.storageManager.saveSession(session);
 ```
 
-## API Reference
-
-### Main Class
-
-```typescript
-class Spectrion {
-  static getInstance(): Spectrion;
-  initialize(): Promise<void>;
-  readonly sessionManager: SessionManager;
-  readonly apiMonitor: ApiMonitor;
-  readonly storageManager: StorageManager;
-}
-```
-
-### ApiMonitor
-
-**Methods**
-
-| Method                 | Description                           |
-| ---------------------- | ------------------------------------- |
-| `onApiCall(listener)`  | Register callback for API call events |
-| `offApiCall(listener)` | Remove API call listener              |
-| `interceptFetch()`     | Intercept window.fetch calls          |
-| `interceptXHR()`       | Intercept XMLHttpRequest calls        |
-
-### SessionManager
-
-**Methods**
-
-| Method                           | Description                |
-| -------------------------------- | -------------------------- |
-| `getSession(tabId)`              | Get active session for tab |
-| `startSession(tabId, domain)`    | Start a new session        |
-| `endSession(tabId)`              | End active session         |
-| `addApiCall(tabId, apiCall)`     | Add API call to session    |
-| `restoreSession(tabId, session)` | Restore a session          |
-
-### StorageManager
-
-**Methods**
-
-| Method                              | Description                 |
-| ----------------------------------- | --------------------------- |
-| `saveSession(session)`              | Save session to storage     |
-| `updateSession(session)`            | Update existing session     |
-| `getAllSessions()`                  | Get all stored sessions     |
-| `getSessionById(id)`                | Get session by ID           |
-| `saveActiveSession(tabId, session)` | Save active session for tab |
-| `getActiveSession(tabId)`           | Get active session for tab  |
-| `clearActiveSession(tabId)`         | Clear active session        |
-| `clearAllSessions()`                | Clear all stored sessions   |
-
-## Browser Compatibility
-
-| Browser | Minimum Version |
-| ------- | --------------- |
-| Chrome  | 90+             |
-| Firefox | 88+             |
-| Safari  | 14+             |
-| Edge    | 90+             |
-
-## Development
-
-### Setup
-
-```bash
-# Install dependencies
-bun install
-```
-
-### Build
-
-```bash
-# Production build
-bun run build
-
-# Development build with watch mode
-bun run dev
-```
-
-### Test
-
-```bash
-# Run tests
-bun test
-
-# Run tests in watch mode
-bun run test:watch
-
-# Run type checking
-bun run lint
-```
-
-### Project Structure
-
-```
-Spectrion/
-├── src/
-│   ├── core/
-│   │   ├── apiMonitor.ts        # API interception
-│   │   ├── sessionManager.ts   # Session management
-│   │   ├── storageManager.ts   # Data persistence
-│   │   ├── background/         # Background scripts
-│   │   ├── content/            # Content scripts
-│   │   ├── popup/               # Popup UI
-│   │   └── analysis/           # Analysis UI
-│   └── spectrion.ts            # Main entry point
-├── test/                       # Test files
-├── icons/                      # Extension icons
-├── manifest.json                # Extension manifest
-├── package.json                # Dependencies
-├── tsconfig.json               # TypeScript config
-└── webpack.config.js           # Build config
-```
-
-## Contributing
-
-Contributions are welcome! Please follow these guidelines:
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Ensure all tests pass
-6. Submit a pull request
-
-### Development Setup
-
-```bash
-# Clone your fork
-git clone https://github.com/YOUR_USERNAME/Spectrion.git
-cd Spectrion
-
-# Install dependencies
-bun install
-
-# Create a feature branch
-git checkout -b feature/your-feature-name
-
-# Make your changes and test
-bun test
-
-# Commit and push
-git commit -m "Add your feature"
-git push origin feature/your-feature-name
-```
-
-### Development Commands
-
-```bash
-# Install dependencies
-bun install
-
-# Run type checking
-bun run lint
-
-# Run tests
-bun test
-
-# Build extension
-bun run build
-```
+---
 
 ## License
 
-MIT License - Copyright (c) 2026 DotJumpDot
+MIT License - Copyright (c) 2026 [https://github.com/dotjumpdot](https://github.com/dotjumpdot)
 
-## Changelog
-
-See [CHANGELOG.md](CHANGELOG.md) for a list of changes in each version.
+---
 
 ## Support
 
-- 🐛 Issues: [GitHub Issues](https://github.com/DotJumpDot/Spectrion/issues)
-- 📖 Documentation: [AGENTS.md](AGENTS.md)
+- GitHub Issues: [https://github.com/DotJumpDot/Spectrion/issues](https://github.com/DotJumpDot/Spectrion/issues)
+- Documentation: [AGENTS.md](AGENTS.md)
 
 ---
 
