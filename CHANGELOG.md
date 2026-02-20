@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.1] - 2026-02-20
+
+### Added
+
+- Dark mode support in Analysis page with theme toggle
+- Automatic theme detection based on system preferences
+- Smooth transitions between light and dark themes
+- Improved color contrast and readability in dark mode
+
+### Fixed
+
+- Fixed refresh bug in Analysis page that caused data loss
+- Fixed session state preservation during page refresh
+- Resolved issues with theme persistence across page reloads
+- Fixed API call list not updating correctly after refresh
+
 ## [1.4.0] - 2026-02-19
 
 ### Added

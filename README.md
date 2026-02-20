@@ -2,7 +2,7 @@
 
 A powerful browser extension for analyzing API calls across browsing sessions with real-time monitoring and session management.
 
-Version 1.4.0 - UI Enhancements & Edge Compatibility 🎉
+Version 1.4.1 - 🎉
 
 View on GitHub
 

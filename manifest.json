@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Spectrion",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "A powerful browser extension for analyzing API calls across browsing sessions",
   "author": "DotJumpDot",
   "icons": {

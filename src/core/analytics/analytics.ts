@@ -36,7 +36,7 @@ let analyticsTabId: number | null = null;
 let timeRangeFilter = "all";
 let responseTimeChart: any = null;
 let statusChart: any = null;
-let updateInterval: number | null = null;
+let isDarkMode = false;
 
 import {
   Chart,
@@ -65,6 +65,8 @@ Chart.register(
 
 document.addEventListener("DOMContentLoaded", () => {
   const timeRangeFilterSelect = document.getElementById("timeRangeFilter") as HTMLSelectElement;
+  const refreshAnalyticsBtn = document.getElementById("refreshAnalyticsBtn");
+  const darkModeToggle = document.getElementById("darkModeToggle");
   const clearAnalyticsBtn = document.getElementById("clearAnalyticsBtn");
   const confirmModal = document.getElementById("confirmModal");
   const confirmCancel = document.getElementById("confirmCancel");
@@ -442,10 +444,56 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  function toggleDarkMode(): void {
+    isDarkMode = !isDarkMode;
+    document.body.classList.toggle("dark-mode", isDarkMode);
+
+    const sunIcon = darkModeToggle?.querySelector(".sun-icon") as HTMLElement;
+    const moonIcon = darkModeToggle?.querySelector(".moon-icon") as HTMLElement;
+
+    if (sunIcon && moonIcon) {
+      sunIcon.style.display = isDarkMode ? "none" : "block";
+      moonIcon.style.display = isDarkMode ? "block" : "none";
+    }
+
+    chrome.storage.local.set({ spectrion_analytics_dark_mode: isDarkMode });
+
+    updateCharts();
+  }
+
+  function loadDarkModePreference(): void {
+    chrome.storage.local.get("spectrion_analytics_dark_mode", (result) => {
+      if (result.spectrion_analytics_dark_mode) {
+        isDarkMode = true;
+        document.body.classList.add("dark-mode");
+
+        const sunIcon = darkModeToggle?.querySelector(".sun-icon") as HTMLElement;
+        const moonIcon = darkModeToggle?.querySelector(".moon-icon") as HTMLElement;
+
+        if (sunIcon && moonIcon) {
+          sunIcon.style.display = "none";
+          moonIcon.style.display = "block";
+        }
+      }
+    });
+  }
+
+  function updateCharts(): void {
+    const data = calculateAnalytics();
+    updateResponseTimeChart(data);
+    updateStatusChart(data);
+  }
+
   timeRangeFilterSelect?.addEventListener("change", (e) => {
     timeRangeFilter = (e.target as HTMLSelectElement).value;
     updateDashboard();
   });
+
+  refreshAnalyticsBtn?.addEventListener("click", () => {
+    loadApiCalls();
+  });
+
+  darkModeToggle?.addEventListener("click", toggleDarkMode);
 
   clearAnalyticsBtn?.addEventListener("click", clearAnalytics);
 
@@ -454,10 +502,10 @@ document.addEventListener("DOMContentLoaded", () => {
     updateEndpointsTable(data, endpointSearch.value);
   });
 
+  loadDarkModePreference();
+
   getCurrentTabInfo();
   loadApiCalls();
-
-  updateInterval = window.setInterval(loadApiCalls, 3000);
 
   chrome.runtime.onMessage.addListener((message) => {
     if (message.type === "API_CALLS_UPDATED") {
